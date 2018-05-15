@@ -14,13 +14,13 @@
 #################################################################
 #
 # The unit: What is the id of the unit in the table 'ut_data_to_create_units'
-	SET @mefe_unit_id = 'the_MEFE_unit_id';
+	SET @mefe_unit_id = '%s';
 #
 # Environment: Which environment are you creating the unit in?
 #	- 1 is for the DEV/Staging
 #	- 2 is for the prod environment
 #	- 3 is for the Demo environment
-	SET @environment = '1_DEV-2_PROD-3_DEMO';
+	SET @environment = %d;
 #
 ########################################################################
 #
