@@ -140,7 +140,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	err = h.runsql("unit_create_new.sql", u.ID)
 	if err != nil {
 		ctx.WithError(err).Errorf("unit_create_new.sql failed")
-		response.BadRequest(w, "Failed to create new unit")
+		response.BadRequest(w, err.Error())
 		return
 	}
 
