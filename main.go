@@ -116,8 +116,8 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Robots-Tag", "none") // We don't want Google to index us
 
 	decoder := json.NewDecoder(r.Body)
-	var u Unit
-	err := decoder.Decode(&u)
+	var units []Unit
+	err := decoder.Decode(&units)
 	if err != nil {
 		log.WithError(err).Errorf("Input error")
 		response.BadRequest(w, "Invalid JSON")
@@ -125,25 +125,28 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	ctx := log.WithFields(log.Fields{
-		"unit": u,
-	})
+	for _, unit := range units {
 
-	ctx.Info("load json payload")
+		ctx := log.WithFields(log.Fields{
+			"unit": unit,
+		})
 
-	if u.ID == "" {
-		ctx.Error("Missing ID")
-		response.BadRequest(w, "Missing ID")
-		return
+		ctx.Info("processing")
+
+		if unit.ID == "" {
+			ctx.Error("Missing ID")
+			response.BadRequest(w, "Missing ID")
+			return
+		}
+
+		err = h.runsql("unit_create_new.sql", unit.ID)
+		if err != nil {
+			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			response.BadRequest(w, err.Error())
+			return
+		}
 	}
 
-	err = h.runsql("unit_create_new.sql", u.ID)
-	if err != nil {
-		ctx.WithError(err).Errorf("unit_create_new.sql failed")
-		response.BadRequest(w, err.Error())
-		return
-	}
-
-	response.OK(w, u)
+	response.OK(w, units)
 
 }
