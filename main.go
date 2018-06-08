@@ -53,13 +53,22 @@ func New() (h handler, err error) {
 	cfg.Region = endpoints.ApSoutheast1RegionID
 	e, err := env.New(cfg)
 	if err != nil {
-		log.WithError(err).Fatal("error getting unee-t env")
+		log.WithError(err).Warn("error getting unee-t env")
+	}
+
+	var mysqlhost string
+	val, ok := os.LookupEnv("MYSQL_HOST")
+	if ok {
+		log.Infof("MYSQL_HOST overridden by local env: %s", val)
+		mysqlhost = val
+	} else {
+		mysqlhost = e.Udomain("auroradb")
 	}
 
 	h = handler{
 		DSN: fmt.Sprintf("bugzilla:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL",
 			e.GetSecret("MYSQL_PASSWORD"),
-			e.Udomain("auroradb")),
+			mysqlhost),
 		Domain:         fmt.Sprintf("https://%s", e.Udomain("case")),
 		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
 		Code:           e.Code,
