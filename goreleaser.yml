@@ -8,10 +8,8 @@ dockers:
           - '{{ .Tag }}'
           - 'latest'
       extra_files:
-          - sql/unit_create_new.sql
-          - sql/unit_disable_existing.sql
+          - sql/
 
 archive:
     files:
-      - sql/unit_create_new.sql
-      - sql/unit_disable_existing.sql
+      - sql/
