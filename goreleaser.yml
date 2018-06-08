@@ -1,16 +1,15 @@
 build:
-    main: main.go
-    binary: unit
-    goos:
-        - windows
-        - darwin
-        - linux
-    goarch:
-        - amd64
+  env:
+    - CGO_ENABLED=0
 
 dockers:
     - image: uneet/unit
       tag_templates:
           - '{{ .Tag }}'
-          - 'v{{ .Major }}.{{ .Minor }}'
           - 'latest'
+      extra_files:
+          - sql
+
+archive:
+    files:
+        - sql
