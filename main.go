@@ -94,7 +94,7 @@ func main() {
 
 	addr := ":" + os.Getenv("PORT")
 	app := pat.New()
-	app.Post("/create", http.HandlerFunc(h.createUnit))
+	app.Post("/create", env.Towr(env.Protect(http.HandlerFunc(h.createUnit), h.APIAccessToken)))
 	if err := http.ListenAndServe(addr, app); err != nil {
 		log.WithError(err).Fatal("error listening")
 	}
