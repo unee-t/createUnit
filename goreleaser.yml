@@ -12,4 +12,4 @@ dockers:
 
 archive:
     files:
-      - sql/
+      - sql/*

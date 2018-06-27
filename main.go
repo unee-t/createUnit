@@ -31,12 +31,12 @@ type handler struct {
 }
 
 type unit struct {
-	MefeUnitID             sql.NullString `json:"mefe_unit_id"`             // mefe_unit_id
-	MefeCreatorUserID      sql.NullString `json:"mefe_creator_user_id"`     // mefe_creator_user_id
-	BzfeCreatorUserID      int            `json:"bzfe_creator_user_id"`     // bzfe_creator_user_id
-	ClassificationID       int16          `json:"classification_id"`        // classification_id
-	UnitName               string         `json:"unit_name"`                // unit_name
-	UnitDescriptionDetails sql.NullString `json:"unit_description_details"` // unit_description_details
+	MefeUnitID             string `json:"mefe_unit_id"`             // mefe_unit_id
+	MefeCreatorUserID      string `json:"mefe_creator_user_id"`     // mefe_creator_user_id
+	BzfeCreatorUserID      int    `json:"bzfe_creator_user_id"`     // bzfe_creator_user_id
+	ClassificationID       int    `json:"classification_id"`        // classification_id
+	UnitName               string `json:"unit_name"`                // unit_name
+	UnitDescriptionDetails string `json:"unit_description_details"` // unit_description_details
 }
 
 func init() {
@@ -49,7 +49,7 @@ func init() {
 
 func (h handler) step1Insert(unit unit) (err error) {
 	_, err = h.db.Exec(
-		`INSERT INTO ut_data_to_create_units (mefe_unit_id
+		`INSERT INTO ut_data_to_create_units (mefe_unit_id,
 			mefe_creator_user_id,
 			bzfe_creator_user_id,
 			classification_id,
@@ -165,7 +165,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 			"unit": unit,
 		})
 
-		if !unit.MefeUnitID.Valid {
+		if unit.MefeUnitID == "" {
 			ctx.Error("missing ID")
 			response.BadRequest(w, "Missing ID")
 			return
@@ -174,12 +174,13 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		err := h.step1Insert(unit)
 		if err != nil {
 			ctx.WithError(err).Error("failed to run step1Insert")
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			response.BadRequest(w, err.Error())
+			return
 		}
 
 		ctx.Info("inserted")
 
-		err = h.runsql("unit_create_new.sql", unit.MefeUnitID.String)
+		err = h.runsql("unit_create_new.sql", unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
