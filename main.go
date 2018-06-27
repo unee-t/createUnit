@@ -24,7 +24,6 @@ import (
 
 type handler struct {
 	DSN            string // e.g. "bugzilla:secret@tcp(auroradb.dev.unee-t.com:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL"
-	Domain         string // e.g. https://dev.case.unee-t.com
 	APIAccessToken string // e.g. O8I9svDTizOfLfdVA5ri
 	db             *sql.DB
 	Code           env.EnvCode
@@ -93,12 +92,9 @@ func New() (h handler, err error) {
 		DSN: fmt.Sprintf("bugzilla:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL",
 			e.GetSecret("MYSQL_PASSWORD"),
 			mysqlhost),
-		Domain:         fmt.Sprintf("https://%s", e.Udomain("case")),
 		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
 		Code:           e.Code,
 	}
-
-	log.Infof("Frontend URL: %v", h.Domain)
 
 	h.db, err = sql.Open("mysql", h.DSN)
 	if err != nil {
@@ -158,6 +154,11 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+
+	if len(units) < 1 {
+		response.BadRequest(w, "Empty payload")
+		return
+	}
 
 	for _, unit := range units {
 
