@@ -135,11 +135,16 @@ func (h handler) BasicEngine() http.Handler {
 }
 
 func (h handler) runsql(sqlfile string, unitID string) (err error) {
+
+	if unitID == "" {
+		return fmt.Errorf("id is unset")
+	}
+
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
 	if err != nil {
 		return
 	}
-	log.Infof("Running %s with unit id %s with env %d", sqlfile, unitID, h.Code)
+	log.Infof("Running %s with unit id %v with env %d", sqlfile, unitID, h.Code)
 	_, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
 	return
 }
@@ -175,10 +180,10 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 	for _, umd := range metas {
 
 		ctx := log.WithFields(log.Fields{
-			"unitMetaData": umd,
+			"unitMetaData id": umd.BzID,
 		})
 
-		err = h.runsql("unit_disable_existing.sql", string(umd.BzID))
+		err = h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
 			response.BadRequest(w, err.Error())
