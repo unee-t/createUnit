@@ -144,12 +144,22 @@ func (h handler) runsql(sqlfile string, unitID string) (err error) {
 	return
 }
 
-// Have no idea how to test this
 func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 
+	// db.unitMetaData.find()
+	// { "_id" : "XSr3WRWRn5QipGvjq", "bzId" : 2,
+	// "bzName" : "Demo - Unit 13-06 - Comp B-2", "displayName" : "",
+	// "streetAddress" : "", "city" : "", "zipCode" : "", "state" : "", "country" :
+	// "", "createdAt" : ISODate("2018-06-28T02:42:18.602Z"), "ownerIds" : [ ],
+	// "moreInfo" : "", "unitType" : null }
+
+	type unitMetaData struct {
+		BzID int `json:"bzId"`
+	}
+
 	decoder := json.NewDecoder(r.Body)
-	var units []unit
-	err := decoder.Decode(&units)
+	var metas []unitMetaData
+	err := decoder.Decode(&metas)
 	if err != nil {
 		log.WithError(err).Error("input error")
 		response.BadRequest(w, "Invalid JSON")
@@ -157,18 +167,18 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if len(units) < 1 {
+	if len(metas) < 1 {
 		response.BadRequest(w, "Empty payload")
 		return
 	}
 
-	for _, unit := range units {
+	for _, umd := range metas {
 
 		ctx := log.WithFields(log.Fields{
-			"unit": unit,
+			"unitMetaData": umd,
 		})
 
-		err = h.runsql("unit_disable_existing.sql", unit.MefeUnitID)
+		err = h.runsql("unit_disable_existing.sql", string(umd.BzID))
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
 			response.BadRequest(w, err.Error())
@@ -176,9 +186,7 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 		}
 		ctx.Info("ran unit_disable_existing.sql")
 	}
-
-	response.OK(w, units)
-
+	response.OK(w, metas)
 }
 
 func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
