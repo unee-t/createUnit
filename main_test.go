@@ -32,6 +32,12 @@ func TestRoutes(t *testing.T) {
 			assert.Equal(t, "Invalid JSON\n", r.Body.String())
 			assert.Equal(t, http.StatusBadRequest, r.Code)
 		})
+	r.POST("/disable").
+		SetBody("").
+		Run(h.BasicEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, "Invalid JSON\n", r.Body.String())
+			assert.Equal(t, http.StatusBadRequest, r.Code)
+		})
 	r.GET("/").
 		Run(h.BasicEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 			assert.Equal(t, http.StatusNotFound, r.Code)

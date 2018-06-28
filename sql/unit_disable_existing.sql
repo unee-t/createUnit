@@ -15,7 +15,7 @@
 #################################################################
 
 # We need the BZ product id for the unit
-	SET @product_id = 'bz_product_id_of_unit_to_disable';
+	SET @product_id = '%s';
 
 # We also need to know the date when the unit was disabled in the MEFE
 	SET @inactive_when = NOW();

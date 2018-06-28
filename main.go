@@ -29,13 +29,15 @@ type handler struct {
 	Code           env.EnvCode
 }
 
+// We don't fine grain the types like sqlNullstring since that makes the JSON
+// marshaller more complex
 type unit struct {
-	MefeUnitID             string `json:"mefe_unit_id"`             // mefe_unit_id
-	MefeCreatorUserID      string `json:"mefe_creator_user_id"`     // mefe_creator_user_id
-	BzfeCreatorUserID      int    `json:"bzfe_creator_user_id"`     // bzfe_creator_user_id
-	ClassificationID       int    `json:"classification_id"`        // classification_id
-	UnitName               string `json:"unit_name"`                // unit_name
-	UnitDescriptionDetails string `json:"unit_description_details"` // unit_description_details
+	MefeUnitID             string `json:"mefe_unit_id"`
+	MefeCreatorUserID      string `json:"mefe_creator_user_id,omitempty"`
+	BzfeCreatorUserID      int    `json:"bzfe_creator_user_id,omitempty"`
+	ClassificationID       int    `json:"classification_id,omitempty"`
+	UnitName               string `json:"unit_name,omitempty"`
+	UnitDescriptionDetails string `json:"unit_description_details,omitempty"`
 }
 
 func init() {
@@ -128,6 +130,7 @@ func main() {
 func (h handler) BasicEngine() http.Handler {
 	app := mux.NewRouter()
 	app.HandleFunc("/create", h.createUnit).Methods("POST")
+	app.HandleFunc("/disable", h.disableUnit).Methods("POST")
 	return app
 }
 
@@ -141,9 +144,44 @@ func (h handler) runsql(sqlfile string, unitID string) (err error) {
 	return
 }
 
-func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
+// Have no idea how to test this
+func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("X-Robots-Tag", "none") // We don't want Google to index us
+	decoder := json.NewDecoder(r.Body)
+	var units []unit
+	err := decoder.Decode(&units)
+	if err != nil {
+		log.WithError(err).Error("input error")
+		response.BadRequest(w, "Invalid JSON")
+		return
+	}
+	defer r.Body.Close()
+
+	if len(units) < 1 {
+		response.BadRequest(w, "Empty payload")
+		return
+	}
+
+	for _, unit := range units {
+
+		ctx := log.WithFields(log.Fields{
+			"unit": unit,
+		})
+
+		err = h.runsql("unit_disable_existing.sql", unit.MefeUnitID)
+		if err != nil {
+			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
+			response.BadRequest(w, err.Error())
+			return
+		}
+		ctx.Info("ran unit_disable_existing.sql")
+	}
+
+	response.OK(w, units)
+
+}
+
+func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	var units []unit
