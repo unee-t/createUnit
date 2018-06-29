@@ -16,6 +16,14 @@
 
 # We need the BZ product id for the unit
 	SET @product_id = '%s';
+
+# We need the BZ user id of the user who is making the change
+    SET @bz_user_id = 'enter_the_bz_user_id_of_the_user_who_initiate_the_change';
+
+# We need the environment you are in
+#	- 1 is for DEV/Staging
+#	- 2 is PROD
+#	- 3 is Demo/Local installation
 	SET @environment = %d;
 
 # We also need to know the date when the unit was disabled in the MEFE
