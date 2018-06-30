@@ -91,7 +91,8 @@ func New() (h handler, err error) {
 	}
 
 	h = handler{
-		DSN: fmt.Sprintf("bugzilla:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL",
+		DSN: fmt.Sprintf("%s:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL",
+			e.GetSecret("MYSQL_USER"),
 			e.GetSecret("MYSQL_PASSWORD"),
 			mysqlhost),
 		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
