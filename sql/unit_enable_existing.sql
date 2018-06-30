@@ -4,7 +4,7 @@
 #	- The unit must already exists in the BZ table
 #
 # This script will
-#	- Disable the unit
+#	- Enable the unit
 #	- Log what it does in the BZ database
 #	- Exit with no error if everything went as expected
 #
@@ -27,7 +27,7 @@
 	SET @environment = %d;
 
 # We also need to know the date when the unit was disabled in the MEFE
-	SET @inactive_when = NOW();
+	SET @active_when = NOW();
 
 #
 ########################################################################
@@ -37,6 +37,6 @@
 ########################################################################
 
 # We have everything, we can now call the procedure which disables a unit
-	CALL `unit_disable_existing`;
+	CALL `unit_enable_existing`;
 
 
