@@ -212,7 +212,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var results []sql.Result
+	var results []int
 	for _, unit := range units {
 
 		ctx := log.WithFields(log.Fields{
@@ -234,16 +234,27 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		ctx.Info("inserted")
 
-		res, err := h.runsql("unit_create_new.sql", unit.MefeUnitID)
+		_, err = h.runsql("unit_create_new.sql", unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
 			return
 		}
-		ctx.Infof("ran unit_create_new.sql with %v", res)
-		results = append(results, res)
+		ctx.Infof("ran unit_create_new.sql")
+		ProductID, err := h.getProductID(unit.MefeUnitID)
+		if err != nil {
+			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			response.BadRequest(w, err.Error())
+			return
+		}
+		results = append(results, ProductID)
 	}
 
 	response.OK(w, results)
 
+}
+
+func (h handler) getProductID(MefeUnitID string) (ProductID int, err error) {
+	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).Scan(&ProductID)
+	return ProductID, err
 }

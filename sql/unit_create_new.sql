@@ -30,6 +30,3 @@
 
 # We have everything, we need. We can call the script now
 	CALL `unit_create_with_dummy_users`;
-	
-# We return the Newly created product_id
-	SELECT `product_id` FROM `ut_data_to_create_units` WHERE `mefe_unit_id` = @mefe_unit_id;
