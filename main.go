@@ -134,19 +134,20 @@ func (h handler) BasicEngine() http.Handler {
 	return app
 }
 
-func (h handler) runsql(sqlfile string, unitID string) (err error) {
+func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
 
 	if unitID == "" {
-		return fmt.Errorf("id is unset")
+		return res, fmt.Errorf("id is unset")
 	}
 
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
 	if err != nil {
 		return
 	}
+
 	log.Infof("Running %s with unit id %v with env %d", sqlfile, unitID, h.Code)
-	_, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
-	return
+	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
+	return res, err
 }
 
 func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +184,7 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 			"unitMetaData id": umd.BzID,
 		})
 
-		err = h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
+		_, err := h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
 			response.BadRequest(w, err.Error())
@@ -211,6 +212,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var results []sql.Result
 	for _, unit := range units {
 
 		ctx := log.WithFields(log.Fields{
@@ -232,15 +234,16 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		ctx.Info("inserted")
 
-		err = h.runsql("unit_create_new.sql", unit.MefeUnitID)
+		res, err := h.runsql("unit_create_new.sql", unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
 			return
 		}
-		ctx.Info("ran unit_create_new.sql")
+		ctx.Infof("ran unit_create_new.sql with %v", res)
+		results = append(results, res)
 	}
 
-	response.OK(w, units)
+	response.OK(w, results)
 
 }
