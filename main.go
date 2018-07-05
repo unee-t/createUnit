@@ -40,6 +40,11 @@ type unit struct {
 	UnitDescriptionDetails string `json:"unit_description_details,omitempty"`
 }
 
+type unitCreated struct {
+	ProductID int    `json:"id"`
+	UnitName  string `json:"name"`
+}
+
 func init() {
 	if os.Getenv("UP_STAGE") == "" {
 		log.SetHandler(text.Default)
@@ -213,7 +218,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var results []int
+	var results []unitCreated
 	for _, unit := range units {
 
 		ctx := log.WithFields(log.Fields{
@@ -255,7 +260,8 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h handler) getProductID(MefeUnitID string) (ProductID int, err error) {
-	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).Scan(&ProductID)
-	return ProductID, err
+func (h handler) getProductID(MefeUnitID string) (newUnit unitCreated, err error) {
+	err = h.db.QueryRow("SELECT product_id, unit_name FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).
+		Scan(&newUnit.ProductID, &newUnit.UnitName)
+	return newUnit, err
 }
