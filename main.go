@@ -261,7 +261,12 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handler) getProductID(MefeUnitID string) (newUnit unitCreated, err error) {
-	err = h.db.QueryRow("SELECT product_id, unit_name FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).
-		Scan(&newUnit.ProductID, &newUnit.UnitName)
+	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).
+		Scan(&newUnit.ProductID)
+	if err != nil {
+		return newUnit, err
+	}
+	err = h.db.QueryRow("SELECT name FROM products WHERE id=?", newUnit.ProductID).
+		Scan(&newUnit.UnitName)
 	return newUnit, err
 }
