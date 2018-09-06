@@ -40,6 +40,6 @@ func TestRoutes(t *testing.T) {
 		})
 	r.GET("/").
 		Run(h.BasicEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-			assert.Equal(t, http.StatusNotFound, r.Code)
+			assert.Equal(t, http.StatusOK, r.Code)
 		})
 }
