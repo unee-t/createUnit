@@ -137,6 +137,7 @@ func (h handler) BasicEngine() http.Handler {
 	app := mux.NewRouter()
 	app.HandleFunc("/create", h.createUnit).Methods("POST")
 	app.HandleFunc("/disable", h.disableUnit).Methods("POST")
+	app.HandleFunc("/", h.ping).Methods("GET")
 	return app
 }
 
@@ -154,6 +155,15 @@ func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err erro
 	log.Infof("Running %s with unit id %v with env %d", sqlfile, unitID, h.Code)
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
 	return res, err
+}
+
+func (h handler) ping(w http.ResponseWriter, r *http.Request) {
+	err := h.db.Ping()
+	if err != nil {
+		log.WithError(err).Error("failed to ping database")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	fmt.Fprintf(w, "OK")
 }
 
 func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
