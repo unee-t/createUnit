@@ -14,13 +14,9 @@ There are CloudWatch alarms when functions:
 # uneet-dev RDS is still open to the world
 
 uneet-{demo,prod} will be locked down via Security Groups, i.e. the database's
-default security group will not expose port 3306 to All.
+default security group will not allow inbound 3306 to All.
 
 The RDS database is protected by a password and a "CIDR whitelist", implemented
-by security groups configuration. Lambdas are white listed by putting them into
-TWO security groups, for example on the dev account:
-* sg-0b83472a34bc17400 "RDS", applied to RDS & Lambda
-* sg-0f4dadb564041855b "secondary" only on Lambda
 
 sg-0b83472a34bc17400 allows inbound 3306 from sg-0f4dadb564041855b, allowing
 the lambda to communicate with the RDS securely. Outbound allows it talk to
@@ -33,7 +29,6 @@ Caveat: AWS requires lambdas to be placed in private subnets, in order for
 security groups to work.
 
 If you are developing from home using the Docker image, you will probably need
-to whitelist your IP manually with default RDS security group. Notice this
-differs account to account.
+to whitelist your IP manually with default RDS security group if not using uneet-dev.
 
 <img src=https://media.dev.unee-t.com/2018-09-06/my-ip.png alt="whitelist your IP address">

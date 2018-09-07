@@ -5,6 +5,12 @@ DEVUPJSON = '.profile |= "uneet-dev" \
 		  | .profile |= "uneet-dev" \
 		  | .lambda.vpc.security_groups |= [ "sg-0b83472a34bc17400", "sg-0f4dadb564041855b" ]'
 
+DEMOUPJSON = '.profile |= "uneet-demo" \
+		  |.stages.production |= (.domain = "unit.demo.unee-t.com" | .zone = "demo.unee-t.com") \
+		  | .actions[0].emails |= ["kai.hendry+unitdemo@unee-t.com"] \
+		  | .lambda.vpc.subnets |= [ "subnet-0bdef9ce0d0e2f596", "subnet-091e5c7d98cd80c0d", "subnet-0fbf1eb8af1ca56e3" ] \
+		  | .lambda.vpc.security_groups |= [ "sg-6f66d316" ]'
+
 dev:
 	@echo $$AWS_ACCESS_KEY_ID
 	jq $(DEVUPJSON) up.json.in > up.json
@@ -12,7 +18,7 @@ dev:
 
 demo:
 	@echo $$AWS_ACCESS_KEY_ID
-	jq '.profile |= "uneet-demo" |.stages.production |= (.domain = "unit.demo.unee-t.com" | .zone = "demo.unee-t.com") | .actions[0].emails |= ["kai.hendry+unitdemo@unee-t.com"]' up.json.in > up.json
+	jq $(DEMOUPJSON) up.json.in > up.json
 	up deploy production
 
 prod:
@@ -24,6 +30,6 @@ testlocal:
 	curl -i -H "Authorization: Bearer $(shell aws --profile uneet-dev ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)" -X POST -d @tests/sample.json http://localhost:3000/create
 
 testping:
-	curl -i -H "Authorization: Bearer $(shell aws --profile uneet-dev ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)" https://unit.dev.unee-t.com
+	curl -i -H "Authorization: Bearer $(shell aws --profile uneet-demo ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)" https://unit.demo.unee-t.com
 
 .PHONY: dev demo prod
