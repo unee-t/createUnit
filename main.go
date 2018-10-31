@@ -198,6 +198,8 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 
 		ctx := log.WithFields(log.Fields{
 			"unitMetaData id": umd.BzID,
+			"reqid":           r.Header.Get("X-Request-Id"),
+			"UA":              r.Header.Get("User-Agent"),
 		})
 
 		_, err := h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
@@ -232,7 +234,9 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	for _, unit := range units {
 
 		ctx := log.WithFields(log.Fields{
-			"unit": unit,
+			"unit":  unit,
+			"reqid": r.Header.Get("X-Request-Id"),
+			"UA":    r.Header.Get("User-Agent"),
 		})
 
 		if unit.MefeUnitID == "" {
