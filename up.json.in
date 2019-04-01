@@ -1,6 +1,7 @@
 {
   "name": "unit",
   "profile": "uneet-dev",
+  "timeout": 25,
   "stages": {
     "production": {
       "domain": "unit.dev.unee-t.com",

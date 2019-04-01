@@ -109,7 +109,8 @@ func New() (h handler, err error) {
 		log.WithError(err).Fatal("error opening database")
 		return
 	}
-
+	h.db.SetMaxOpenConns(2)
+	h.db.SetMaxIdleConns(1)
 	return
 
 }
