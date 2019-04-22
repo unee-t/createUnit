@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	jsonhandler "github.com/apex/log/handlers/json"
 	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
@@ -109,8 +110,6 @@ func New() (h handler, err error) {
 		log.WithError(err).Fatal("error opening database")
 		return
 	}
-	h.db.SetMaxOpenConns(2)
-	h.db.SetMaxIdleConns(1)
 	return
 
 }
@@ -143,7 +142,6 @@ func (h handler) BasicEngine() http.Handler {
 }
 
 func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
-
 	if unitID == "" {
 		return res, fmt.Errorf("id is unset")
 	}
@@ -255,13 +253,14 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		ctx.Info("inserted")
 
+		start := time.Now()
 		_, err = h.runsql("unit_create_new.sql", unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
 			return
 		}
-		ctx.Infof("ran unit_create_new.sql")
+		ctx.WithField("duration", time.Since(start)).Infof("ran unit_create_new.sql")
 		ProductID, err := h.getProductID(unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
