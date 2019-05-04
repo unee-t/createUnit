@@ -159,6 +159,27 @@ func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err erro
 	return res, err
 }
 
+func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) {
+	if u.MefeUnitID == "" {
+		return res, fmt.Errorf("mefe_unit_id is unset")
+	}
+	if u.MefeUnitIDint == 0 {
+		return res, fmt.Errorf("mefeUnitIdIntValue is unset")
+	}
+	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
+	if err != nil {
+		return
+	}
+	log.WithFields(log.Fields{
+		"unit": u,
+		"env":  h.Code,
+		"sql":  sqlfile,
+	}).Info("exec")
+
+	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, u.MefeUnitIDint, h.Code))
+	return res, err
+}
+
 func (h handler) ping(w http.ResponseWriter, r *http.Request) {
 	err := h.db.Ping()
 	if err != nil {
@@ -257,7 +278,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		ctx.Info("inserted")
 
 		start := time.Now()
-		_, err = h.runsql("unit_create_new.sql", unit.MefeUnitID)
+		_, err = h.runsqlUnit("unit_create_new.sql", unit)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
@@ -278,7 +299,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handler) getProductID(MefeUnitIDint int) (newUnit unitCreated, err error) {
-	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitIDint).
+	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id_int_value=?", MefeUnitIDint).
 		Scan(&newUnit.ProductID)
 	if err != nil {
 		return newUnit, err

@@ -51,7 +51,7 @@ func Test(t *testing.T) {
 	r := gofight.New()
 	u := []unit{unit{
 		MefeUnitID:             name,
-		MefeUnitIDint:          3,
+		MefeUnitIDint:          4,
 		MefeCreatorUserID:      "user",
 		BzfeCreatorUserID:      55,
 		ClassificationID:       2,
