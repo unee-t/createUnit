@@ -46,25 +46,22 @@ func TestRoutes(t *testing.T) {
 		})
 }
 
-func Benchmark_RealCreate(b *testing.B) {
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		name := randomdata.SillyName()
-		r := gofight.New()
-		u := []unit{unit{
-			MefeUnitID:             name,
-			MefeCreatorUserID:      "user",
-			BzfeCreatorUserID:      55,
-			ClassificationID:       2,
-			UnitName:               name,
-			UnitDescriptionDetails: "Up on the hills and testing",
-		}}
-		uJSON, _ := json.Marshal(u)
-		r.POST("/create").
-			SetBody(string(uJSON)).
-			Run(h.BasicEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
-				assert.Contains(b, r.Body.String(), name)
-				assert.Equal(b, http.StatusOK, r.Code)
-			})
-	}
+func Test(t *testing.T) {
+	name := randomdata.SillyName()
+	r := gofight.New()
+	u := []unit{unit{
+		MefeUnitID:             name,
+		MefeCreatorUserID:      "user",
+		BzfeCreatorUserID:      55,
+		ClassificationID:       2,
+		UnitName:               name,
+		UnitDescriptionDetails: "Up on the hills and testing",
+	}}
+	uJSON, _ := json.Marshal(u)
+	r.POST("/create").
+		SetBody(string(uJSON)).
+		Run(h.BasicEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Contains(t, r.Body.String(), name)
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
 }
