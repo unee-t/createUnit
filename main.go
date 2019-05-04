@@ -58,13 +58,15 @@ func init() {
 func (h handler) step1Insert(unit unit) (err error) {
 	_, err = h.db.Exec(
 		`INSERT INTO ut_data_to_create_units (mefe_unit_id,
+			mefe_unit_id_int_value,
 			mefe_creator_user_id,
 			bzfe_creator_user_id,
 			classification_id,
 			unit_name,
 			unit_description_details
-		) VALUES (?,?,?,?,?,?)`,
+		) VALUES (?,?,?,?,?,?,?)`,
 		unit.MefeUnitID,
+		unit.MefeUnitIDint,
 		unit.MefeCreatorUserID,
 		unit.BzfeCreatorUserID,
 		unit.ClassificationID,
