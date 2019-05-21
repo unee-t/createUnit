@@ -15,7 +15,6 @@
 #
 # The unit: What is the id of the unit in the table 'ut_data_to_create_units'
 	SET @mefe_unit_id = '%s';
-	SET @mefe_unit_id_int_value := %d;
 #
 # Environment: Which environment are you creating the unit in?
 #	- 1 is for the DEV/Staging

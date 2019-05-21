@@ -34,7 +34,6 @@ type handler struct {
 // marshaller more complex
 type unit struct {
 	MefeUnitID             string `json:"mefe_unit_id"`
-	MefeUnitIDint          int    `json:"mefeUnitIdIntValue"`
 	MefeCreatorUserID      string `json:"mefe_creator_user_id,omitempty"`
 	BzfeCreatorUserID      int    `json:"bzfe_creator_user_id,omitempty"`
 	ClassificationID       int    `json:"classification_id,omitempty"`
@@ -58,15 +57,13 @@ func init() {
 func (h handler) step1Insert(unit unit) (err error) {
 	_, err = h.db.Exec(
 		`INSERT INTO ut_data_to_create_units (mefe_unit_id,
-			mefe_unit_id_int_value,
 			mefe_creator_user_id,
 			bzfe_creator_user_id,
 			classification_id,
 			unit_name,
 			unit_description_details
-		) VALUES (?,?,?,?,?,?,?)`,
+		) VALUES (?,?,?,?,?,?)`,
 		unit.MefeUnitID,
-		unit.MefeUnitIDint,
 		unit.MefeCreatorUserID,
 		unit.BzfeCreatorUserID,
 		unit.ClassificationID,
@@ -163,9 +160,6 @@ func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) 
 	if u.MefeUnitID == "" {
 		return res, fmt.Errorf("mefe_unit_id is unset")
 	}
-	if u.MefeUnitIDint == 0 {
-		return res, fmt.Errorf("mefeUnitIdIntValue is unset")
-	}
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
 	if err != nil {
 		return
@@ -176,7 +170,7 @@ func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) 
 		"sql":  sqlfile,
 	}).Info("exec")
 
-	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, u.MefeUnitIDint, h.Code))
+	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, h.Code))
 	return res, err
 }
 
@@ -268,6 +262,8 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// This fails if a record already exists
+		// TODO check if already exists, if it does continue
 		err := h.step1Insert(unit)
 		if err != nil {
 			ctx.WithError(err).Error("failed to run step1Insert")
@@ -284,8 +280,9 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 			response.BadRequest(w, err.Error())
 			return
 		}
-		ctx.WithField("duration", time.Since(start)).Infof("ran unit_create_new.sql")
-		ProductID, err := h.getProductID(unit.MefeUnitIDint)
+
+		ctx.WithField("duration", time.Since(start).String()).Infof("ran unit_create_new.sql")
+		ProductID, err := h.getProductID(unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
@@ -298,8 +295,8 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h handler) getProductID(MefeUnitIDint int) (newUnit unitCreated, err error) {
-	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id_int_value=?", MefeUnitIDint).
+func (h handler) getProductID(MefeUnitID string) (newUnit unitCreated, err error) {
+	err = h.db.QueryRow("SELECT product_id FROM ut_data_to_create_units WHERE mefe_unit_id=?", MefeUnitID).
 		Scan(&newUnit.ProductID)
 	if err != nil {
 		return newUnit, err
