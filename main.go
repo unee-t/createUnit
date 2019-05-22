@@ -232,6 +232,11 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 
 func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
+	if r.Body == nil {
+		response.BadRequest(w, "Empty payload")
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	var units []unit
 	err := decoder.Decode(&units)
