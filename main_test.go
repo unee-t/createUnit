@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Pallinder/go-randomdata"
 )
 
 var h handler
@@ -47,6 +51,13 @@ func TestRecorder(t *testing.T) {
 		}
 	}
 
+	payload := func(u []unit) io.Reader {
+		requestByte, _ := json.Marshal(u)
+		return bytes.NewReader(requestByte)
+	}
+
+	unitName := randomdata.SillyName()
+
 	tests := [...]struct {
 		name    string
 		verb    string
@@ -71,8 +82,37 @@ func TestRecorder(t *testing.T) {
 			h.ping,
 			check(hasStatus(200), containsContents("OK"), hasHeader("Content-Type", "text/plain; charset=utf-8")),
 		},
+		{
+			"New",
+			"POST",
+			"/create",
+			payload([]unit{unit{
+				MefeUnitID:             unitName,
+				MefeCreatorUserID:      "user",
+				BzfeCreatorUserID:      55,
+				ClassificationID:       2,
+				UnitName:               unitName,
+				UnitDescriptionDetails: "Up on the hills and testing",
+			}}),
+			h.createUnit,
+			check(hasStatus(200), hasHeader("Content-Type", "application/json")),
+		},
+		{
+			"Replay",
+			"POST",
+			"/create",
+			payload([]unit{unit{
+				MefeUnitID:             unitName,
+				MefeCreatorUserID:      "user",
+				BzfeCreatorUserID:      55,
+				ClassificationID:       2,
+				UnitName:               unitName,
+				UnitDescriptionDetails: "Up on the hills and testing",
+			}}),
+			h.createUnit,
+			check(hasStatus(200), hasHeader("Content-Type", "application/json")),
+		},
 	}
-
 	for _, tt := range tests {
 		r, err := http.NewRequest(tt.verb, tt.path, tt.payload)
 		if err != nil {

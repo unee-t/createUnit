@@ -267,9 +267,13 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// This fails if a record already exists
-		// TODO check if already exists, if it does continue
-		err := h.step1Insert(unit)
+		ProductID, err := h.getProductID(unit.MefeUnitID)
+		if err == nil {
+			results = append(results, ProductID)
+			continue
+		}
+
+		err = h.step1Insert(unit)
 		if err != nil {
 			ctx.WithError(err).Error("failed to run step1Insert")
 			response.BadRequest(w, err.Error())
@@ -287,7 +291,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		}
 
 		ctx.WithField("duration", time.Since(start).String()).Infof("ran unit_create_new.sql")
-		ProductID, err := h.getProductID(unit.MefeUnitID)
+		ProductID, err = h.getProductID(unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
 			response.BadRequest(w, err.Error())
@@ -295,7 +299,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		}
 		results = append(results, ProductID)
 	}
-
+	log.Infof("results: %#v", results)
 	response.OK(w, results)
 
 }
