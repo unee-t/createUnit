@@ -12,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tj/go/http/response"
 	"github.com/unee-t/env"
 
@@ -23,9 +25,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var pingPollingFreq = 5 * time.Second
+
 type handler struct {
-	DSN            string // e.g. "bugzilla:secret@tcp(auroradb.dev.unee-t.com:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL"
-	APIAccessToken string // e.g. O8I9svDTizOfLfdVA5ri
+	DSN            string // aurora database connection string
+	APIAccessToken string
 	db             *sql.DB
 	Code           env.EnvCode
 }
@@ -98,6 +102,32 @@ func New() (h handler, err error) {
 		log.WithError(err).Fatal("error opening database")
 		return
 	}
+
+	microservicecheck := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "microservice",
+			Help: "Version with DB ping check",
+		},
+		[]string{
+			"commit",
+		},
+	)
+
+	version := os.Getenv("UP_COMMIT")
+
+	go func() {
+		for {
+			if h.db.Ping() == nil {
+				microservicecheck.WithLabelValues(version).Set(1)
+			} else {
+				microservicecheck.WithLabelValues(version).Set(0)
+			}
+			time.Sleep(pingPollingFreq)
+		}
+	}()
+
+	prometheus.MustRegister(microservicecheck)
+
 	return
 
 }
@@ -125,7 +155,7 @@ func (h handler) BasicEngine() http.Handler {
 	app := mux.NewRouter()
 	app.HandleFunc("/create", h.createUnit).Methods("POST")
 	app.HandleFunc("/disable", h.disableUnit).Methods("POST")
-	app.HandleFunc("/", h.ping).Methods("GET")
+	app.Handle("/metrics", promhttp.Handler()).Methods("GET")
 
 	if os.Getenv("UP_STAGE") == "" {
 		// local dev, get around permissions
@@ -165,15 +195,6 @@ func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) 
 
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, h.Code))
 	return res, err
-}
-
-func (h handler) ping(w http.ResponseWriter, r *http.Request) {
-	err := h.db.Ping()
-	if err != nil {
-		log.WithError(err).Error("failed to ping database")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	fmt.Fprintf(w, "OK")
 }
 
 func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
