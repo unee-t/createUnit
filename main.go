@@ -87,20 +87,8 @@ func New() (h handler, err error) {
 		log.WithError(err).Warn("error getting unee-t env")
 	}
 
-	var mysqlhost string
-	val, ok := os.LookupEnv("MYSQL_HOST")
-	if ok {
-		log.Infof("MYSQL_HOST overridden by local env: %s", val)
-		mysqlhost = val
-	} else {
-		mysqlhost = e.Udomain("auroradb")
-	}
-
 	h = handler{
-		DSN: fmt.Sprintf("%s:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL&collation=utf8mb4_unicode_520_ci",
-			e.GetSecret("MYSQL_USER"),
-			e.GetSecret("MYSQL_PASSWORD"),
-			mysqlhost),
+		DSN:            e.BugzillaDSN(),
 		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
 		Code:           e.Code,
 	}
