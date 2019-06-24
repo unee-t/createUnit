@@ -126,29 +126,27 @@ func New() (h handler, err error) {
 		}
 	}()
 
-	prometheus.MustRegister(microservicecheck)
+	err = prometheus.Register(microservicecheck)
+	if err != nil {
+		log.Warn("prom already registered")
+	}
 
 	return
 
 }
 
 func main() {
-
 	h, err := New()
 	if err != nil {
 		log.WithError(err).Fatal("error setting configuration")
 		return
 	}
-
 	defer h.db.Close()
-
 	addr := ":" + os.Getenv("PORT")
 	app := h.BasicEngine()
-
 	if err := http.ListenAndServe(addr, app); err != nil {
 		log.WithError(err).Fatal("error listening")
 	}
-
 }
 
 func (h handler) BasicEngine() http.Handler {
