@@ -127,7 +127,7 @@ func main() {
 	addr := ":" + os.Getenv("PORT")
 	app := h.BasicEngine()
 
-	if err := http.ListenAndServe(addr, env.Protect(app, h.APIAccessToken)); err != nil {
+	if err := http.ListenAndServe(addr, app); err != nil {
 		log.WithError(err).Fatal("error listening")
 	}
 
@@ -138,7 +138,12 @@ func (h handler) BasicEngine() http.Handler {
 	app.HandleFunc("/create", h.createUnit).Methods("POST")
 	app.HandleFunc("/disable", h.disableUnit).Methods("POST")
 	app.HandleFunc("/", h.ping).Methods("GET")
-	return app
+
+	if os.Getenv("UP_STAGE") == "" {
+		// local dev, get around permissions
+		return app
+	}
+	return env.Protect(app, h.APIAccessToken)
 }
 
 func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
@@ -212,17 +217,15 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, umd := range metas {
-
 		ctx := log.WithFields(log.Fields{
 			"unitMetaData id": umd.BzID,
 			"reqid":           r.Header.Get("X-Request-Id"),
 			"UA":              r.Header.Get("User-Agent"),
 		})
-
 		_, err := h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
-			response.BadRequest(w, err.Error())
+			response.InternalServerError(w, err.Error())
 			return
 		}
 		ctx.Info("ran unit_disable_existing.sql")
@@ -276,7 +279,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		err = h.step1Insert(unit)
 		if err != nil {
 			ctx.WithError(err).Error("failed to run step1Insert")
-			response.BadRequest(w, err.Error())
+			response.InternalServerError(w, err.Error())
 			return
 		}
 
@@ -286,7 +289,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		_, err = h.runsqlUnit("unit_create_new.sql", unit)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
-			response.BadRequest(w, err.Error())
+			response.InternalServerError(w, err.Error())
 			return
 		}
 
@@ -294,7 +297,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		ProductID, err = h.getProductID(unit.MefeUnitID)
 		if err != nil {
 			ctx.WithError(err).Errorf("unit_create_new.sql failed")
-			response.BadRequest(w, err.Error())
+			response.InternalServerError(w, err.Error())
 			return
 		}
 		results = append(results, ProductID)

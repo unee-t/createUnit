@@ -10,10 +10,12 @@ require (
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gorilla/mux v1.7.1
+	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/gommon v0.2.8 // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
+	github.com/prometheus/client_golang v1.0.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/tj/assert v0.0.0-20171129193455-018094318fb0 // indirect
 	github.com/tj/go v1.8.6
