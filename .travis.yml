@@ -1,7 +1,30 @@
+# Variables needed for this script are:
+
+# Case 1: Stored on Travis Settings
+  #For dev environment:
+    # - AWS_ACCOUNT_USER_ID_DEV
+    # - AWS_ACCOUNT_SECRET_DEV
+    # - AWS_PROFILE_DEV
+
+  #For Demo environment:
+    # - AWS_ACCOUNT_USER_ID_DEMO
+    # - AWS_ACCOUNT_SECRET_DEMO
+    # - AWS_PROFILE_DEMO
+
+  #For Prod environment:
+    # - AWS_ACCOUNT_USER_ID_PROD
+    # - AWS_ACCOUNT_SECRET_PROD
+    # - AWS_PROFILE_PROD
+
+# Case 2: Created when Travis CI runs ??
+    # - TRAVIS_TAG
+    # - TRAVIS_OS_NAME
+
 language: go
 
 before_install:
   - curl -sf https://up.apex.sh/install | sudo sh
+  - sudo up upgrade
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
   - aws configure set profile.${AWS_PROFILE_DEV}.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV
@@ -11,13 +34,30 @@ before_install:
 install:
   - sudo apt-get install jq -y
 
+# script:
+#   - go test -v ./...
+
 deploy:
   # dev
   - provider: script
-    script: make PROFILE=${AWS_PROFILE_DEV}
+    script: TRAVIS_PROFILE=$AWS_PROFILE_DEV TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh dev
+    # Alternative solution from kai - use make and a profile variable.
+    #script: make PROFILE=${AWS_PROFILE_DEV}
     edge: true
     on:
       branch: master
+
+  # demo
+  - provider: script
+    script: TRAVIS_PROFILE=$AWS_PROFILE_DEMO TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh demo
+    on:
+      tags: true
+
+  # prod
+  - provider: script
+    script: TRAVIS_PROFILE=$AWS_PROFILE_PROD TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh prod
+    on:
+      tags: true
 
 env:
   - GO111MODULE=on
