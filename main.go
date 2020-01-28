@@ -15,7 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tj/go/http/response"
-	"github.com/unee-t/env"
+	"github.com/unee-t-ins/env"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
@@ -80,7 +80,7 @@ func (h handler) step1Insert(unit unit) (err error) {
 // New setups the configuration assuming various parameters have been setup in the AWS account
 func New() (h handler, err error) {
 
-	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
+	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("ins-dev"))
 	if err != nil {
 		log.WithError(err).Fatal("setting up credentials")
 		return
