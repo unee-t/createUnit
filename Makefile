@@ -1,36 +1,29 @@
-#TODO
-# TRAVIS_PROFILE is hard code now
-#These varibles should be set when .travis.yml runs:
-# - TRAVIS_PROFILE
-# END TODO
-
-TRAVIS_PROFILE := ins-dev
-
 # We create a function to simplify getting variables for aws parameter store.
+# The variable TRAVIS_AWS_PROFILE is set when .travis.yml runs
 
 define ssm
-$(shell aws --profile $(TRAVIS_PROFILE) ssm get-parameters --names $1 --with-decryption --query Parameters[0].Value --output text)
+$(shell aws --profile $(TRAVIS_AWS_PROFILE) ssm get-parameters --names $1 --with-decryption --query Parameters[0].Value --output text)
 endef
 
 # We prepare variables for up in UPJSON and PRODUPJSON.
 # These variables are comming from AWS Parameter Store
 # - STAGE
 # - DOMAIN
-# - EMAIL_FOR_NOTIFICATION_GENERIC
+# - EMAIL_FOR_NOTIFICATION_UNIT
 # - PRIVATE_SUBNET_1
 # - PRIVATE_SUBNET_2
 # - PRIVATE_SUBNET_3
 # - DEFAULT_SECURITY_GROUP
 
-UPJSON = '.profile |= "$(TRAVIS_PROFILE)" \
+UPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  |.stages.production |= (.domain = "unit.$(call ssm,STAGE).$(call ssm,DOMAIN)" | .zone = "$(call ssm,STAGE).$(call ssm,DOMAIN)") \
-		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_GENERIC)"] \
+		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_UNIT)"] \
 		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
 		  | .lambda.vpc.security_groups |= [ "$(call ssm,DEFAULT_SECURITY_GROUP)" ]'
 
-PRODUPJSON = '.profile |= "$(TRAVIS_PROFILE)" \
+PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  |.stages.production |= (.domain = "unit.$(call ssm,DOMAIN)" | .zone = "$(call ssm,DOMAIN)") \
-		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_GENERIC)"] \
+		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_UNIT)"] \
 		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
 		  | .lambda.vpc.security_groups |= [ "$(call ssm,DEFAULT_SECURITY_GROUP)" ]'
 # We have everything, we can run up now.
