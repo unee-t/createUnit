@@ -35,7 +35,6 @@ script:
   - go test -v ./...
 
 deploy:
-
  # dev
  - provider: script
    script: aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV && 
@@ -46,7 +45,6 @@ deploy:
    edge: true
    on:
      branch: master
-
  # demo
  - provider: script
    script: aws configure set profile.$AWS_PROFILE_DEMO.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEMO && 
@@ -58,7 +56,6 @@ deploy:
    on:
      branch: master
      tags: true
-
  # prod
  - provider: script
    script: aws configure set profile.$AWS_PROFILE_PROD aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && 
