@@ -3,10 +3,13 @@ build:
     - CGO_ENABLED=0
 
 dockers:
-  - image: uneet/unit
-    tag_templates:
-      - '{{ .Tag }}'
-      - 'latest'
+    - image: uneet/unit
+      tag_templates:
+          - '{{ .Tag }}'
+          - 'latest'
+      extra_files:
+          - sql/
 
 archive:
-  format: binary
+    files:
+      - sql/*

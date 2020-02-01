@@ -17,23 +17,23 @@
 language: go
 
 before_install:
-- curl -sf https://up.apex.sh/install | sudo sh
-- sudo up upgrade
-- pip install --user awscli
-- export PATH=$PATH:$HOME/.local/bin
+  - curl -sf https://up.apex.sh/install | sudo sh
+  - sudo up upgrade
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 # - aws configure set profile.${AWS_PROFILE_DEV}.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV
 # - aws configure set profile.${AWS_PROFILE_DEV}.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
 # - aws configure set profile.${AWS_PROFILE_DEV}.region $AWS_DEFAULT_REGION
 
 services:
-- docker
+  - docker
 
 install:
-- go get -t ./...
-- sudo apt-get install jq -y
+  - go get -t ./...
+  - sudo apt-get install jq -y
 
 script:
-- go test -v ./...
+  - go test -v ./...
 
 deploy:
 
