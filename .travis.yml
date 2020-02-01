@@ -25,7 +25,11 @@ before_install:
 # - aws configure set profile.${AWS_PROFILE_DEV}.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
 # - aws configure set profile.${AWS_PROFILE_DEV}.region $AWS_DEFAULT_REGION
 
+services:
+- docker
+
 install:
+- go get -t ./...
 - sudo apt-get install jq -y
 
 script:
