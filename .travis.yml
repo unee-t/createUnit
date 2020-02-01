@@ -1,3 +1,5 @@
+language: go
+
 # Variables needed for this script are stored on Travis Settings
 #  - For all environments:
 #    - AWS_DEFAULT_REGION
@@ -13,8 +15,6 @@
 #   - AWS_ACCOUNT_USER_ID_PROD
 #   - AWS_ACCOUNT_SECRET_PROD
 #   - AWS_PROFILE_PROD
-
-language: go
 
 before_install:
   - curl -sf https://up.apex.sh/install | sudo sh
