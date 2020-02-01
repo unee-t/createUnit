@@ -27,10 +27,12 @@ PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
 		  | .lambda.vpc.security_groups |= [ "$(call ssm,DEFAULT_SECURITY_GROUP)" ]'
 # We have everything, we can run up now.
+
 dev:
 	@echo $$AWS_ACCESS_KEY_ID
 	jq $(UPJSON) up.json.in > up.json
 	up deploy production
+
 demo:
 	@echo $$AWS_ACCESS_KEY_ID
 	# We replace the relevant variable in the up.json file
@@ -44,5 +46,6 @@ prod:
 	# We use the template defined in up.json.in for that
 	jq $(PRODUPJSON) up.json.in > up.json
 	up deploy production
+
 test:
 	curl -i -H "Authorization: Bearer $(call ssm,API_ACCESS_TOKEN)" https://unit.$(call ssm,STAGE).$(call ssm,DOMAIN)/metrics
