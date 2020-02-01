@@ -21,7 +21,8 @@ These should be decleared in the AWS Parameter Store for this environment.
 - PRIVATE_SUBNET_1
 - PRIVATE_SUBNET_2
 - PRIVATE_SUBNET_3
-- DEFAULT_SECURITY_GROUP
+- LAMBDA_TO_RDS_SECURITY_GROUP
+- API_ACCESS_TOKEN
 
 Make sure to check the AWS variables needed by the unee-t/env codebase in the [pre-requisite described in the README file](https://github.com/unee-t/env#pre-requisite).
 
