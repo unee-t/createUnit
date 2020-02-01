@@ -1,24 +1,18 @@
-# Variables needed for this script are:
-
-# Case 1: Stored on Travis Settings
-  #For dev environment:
-    # - AWS_ACCOUNT_USER_ID_DEV
-    # - AWS_ACCOUNT_SECRET_DEV
-    # - AWS_PROFILE_DEV
-
-  #For Demo environment:
-    # - AWS_ACCOUNT_USER_ID_DEMO
-    # - AWS_ACCOUNT_SECRET_DEMO
-    # - AWS_PROFILE_DEMO
-
-  #For Prod environment:
-    # - AWS_ACCOUNT_USER_ID_PROD
-    # - AWS_ACCOUNT_SECRET_PROD
-    # - AWS_PROFILE_PROD
-
-# Case 2: Created when Travis CI runs ??
-    # - TRAVIS_TAG
-    # - TRAVIS_OS_NAME
+# Variables needed for this script are stored on Travis Settings
+#  - For all environments:
+#    - AWS_DEFAULT_REGION
+#  - For dev environment:
+#    - AWS_ACCOUNT_USER_ID_DEV
+#    - AWS_ACCOUNT_SECRET_DEV
+#    - AWS_PROFILE_DEV
+#  - For Demo environment:
+#   - AWS_ACCOUNT_USER_ID_DEMO
+#   - AWS_ACCOUNT_SECRET_DEMO
+#   - AWS_PROFILE_DEMO
+# - For Prod environment:
+#   - AWS_ACCOUNT_USER_ID_PROD
+#   - AWS_ACCOUNT_SECRET_PROD
+#   - AWS_PROFILE_PROD
 
 language: go
 
@@ -27,36 +21,51 @@ before_install:
   - sudo up upgrade
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
-  - aws configure set profile.${AWS_PROFILE_DEV}.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV
-  - aws configure set profile.${AWS_PROFILE_DEV}.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
-  - aws configure set profile.${AWS_PROFILE_DEV}.region $AWS_DEFAULT_REGION
+  # - aws configure set profile.${AWS_PROFILE_DEV}.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV
+  # - aws configure set profile.${AWS_PROFILE_DEV}.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
+  # - aws configure set profile.${AWS_PROFILE_DEV}.region $AWS_DEFAULT_REGION
 
 install:
   - sudo apt-get install jq -y
 
-# script:
-#   - go test -v ./...
+script:
+  - go test -v ./...
 
 deploy:
+
   # dev
   - provider: script
-    script: TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh dev
-    # Alternative solution from kai - use make and a profile variable.
-    #script: make PROFILE=${AWS_PROFILE_DEV}
+    script: aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV && 
+    aws configure set profile.$AWS_PROFILE_DEV.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV && 
+    aws configure set profile.$AWS_PROFILE_DEV.region $AWS_DEFAULT_REGION && 
+    aws configure --profile $AWS_PROFILE_DEV list && 
+    TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV make dev
     edge: true
     on:
       branch: master
 
   # demo
   - provider: script
-    script: TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEMO TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh demo
+    script: aws configure set profile.$AWS_PROFILE_DEMO.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEMO && 
+    aws configure set profile.$AWS_PROFILE_DEMO.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEMO && 
+    aws configure set profile.$AWS_PROFILE_DEMO.region $AWS_DEFAULT_REGION && 
+    aws configure --profile $AWS_PROFILE_DEMO list && 
+    TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEMO make demo
+    edge: true
     on:
+      branch: master
       tags: true
 
   # prod
   - provider: script
-    script: TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh prod
+    script: aws configure set profile.$AWS_PROFILE_PROD aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && 
+    aws configure set profile.$AWS_PROFILE_PROD.aws_secret_access_key $AWS_ACCOUNT_SECRET_PROD && 
+    aws configure set profile.$AWS_PROFILE_PROD.region $AWS_DEFAULT_REGION && 
+    aws configure --profile $AWS_PROFILE_PROD list && 
+    TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD make prod
+    edge: true
     on:
+      branch: master
       tags: true
 
 env:
