@@ -31,9 +31,8 @@ Make sure to check the AWS variables needed by the unee-t/env codebase in the [p
 These should be declared as Settings in Travis CI for this Repository.
 
 ### For all environments:
- - DOCKER_USERNAME
- - DOCKER_PASSWORD
  - AWS_DEFAULT_REGION
+ - GITHUB_TOKEN
 
 ### For dev environment:
  - AWS_ACCOUNT_USER_ID_DEV
