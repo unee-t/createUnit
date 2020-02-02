@@ -61,4 +61,3 @@ deploy:
 
 env:
  - GO111MODULE=on
- - GO112MODULE=on
