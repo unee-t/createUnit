@@ -28,14 +28,14 @@ services:
  - docker
 
 install:
- - go get -t ./...
+ - go get -t
  - sudo apt-get install jq -y
 
 after_success:
  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
- - go test -v ./...
+ - go test -v
 
 deploy:
  # dev
