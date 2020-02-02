@@ -9,10 +9,8 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/gorilla/mux v1.7.3
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.4.0
 	github.com/tj/go v1.8.6
-	github.com/unee-t-ins/env v0.2.2
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
+	github.com/unee-t/env v0.3.0
 	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9 // indirect
 )
