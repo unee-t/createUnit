@@ -19,7 +19,7 @@ language: go
 before_install:
  - curl -sf https://up.apex.sh/install | sudo sh
  - pip install --user awscli
-# - export PATH=$PATH:$HOME/.local/bin
+ - export PATH=$PATH:$HOME/.local/bin
 
 services:
  - docker
