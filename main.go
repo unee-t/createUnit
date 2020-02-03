@@ -223,7 +223,6 @@ func (e Env) BugzillaDSN() string {
 		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
 		log.Infof("BUGZILLA_DB_USER is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbUser)
 		log.Infof("The environment variable for BUGZILLA_DB_USER is: %s", os.Getenv("BUGZILLA_DB_USER"))
-		log.Infof("Debug - all the environment variables: %s", os.Environ())
 	}
 
 	if bugzillaDbUser == "" {
