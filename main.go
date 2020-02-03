@@ -115,7 +115,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	//	log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
 	//} else {
 	//	debugdefaultRegion := e.GetSecret("DEFAULT_REGION")
-	//	log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
+	//	log.Infof("DEFAULT_REGION is unset as an environment variable. The value is **%s** in AWS Parameter store", debugdefaultRegion)
 	//}
 
 
@@ -125,7 +125,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	// TODO - Check with @kai if the format `ap-southeast-1` is OK or if we need to transform that...
 	if !ok {
 		defaultRegion = endpoints.ApSoutheast1RegionID
-		log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", defaultRegion)
+		log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
 	}
 
 	cfg.Region = defaultRegion
@@ -221,7 +221,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 	} else {
 		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
-		log.Infof("BUGZILLA_DB_USER is unset. The value is **%s** in AWS Parameter store", bugzillaDbUser)
+		log.Infof("BUGZILLA_DB_USER is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbUser)
 	}
 
 	if bugzillaDbUser == "" {
@@ -235,7 +235,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
 	} else {
 		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
-		log.Infof("BUGZILLA_DB_PASSWORD is unset. The value is **hidden_secret** in AWS Parameter store")
+		log.Infof("BUGZILLA_DB_PASSWORD is unset as an environment variable. The value is **hidden_secret** in AWS Parameter store")
 	}
 
 	if bugzillaDbPassword == "" {
@@ -249,7 +249,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
 	} else {
 		mysqlhost = e.GetSecret("MYSQL_HOST")
-		log.Infof("MYSQL_HOST is unset. The value is **%s** in AWS Parameter store", mysqlhost)
+		log.Infof("MYSQL_HOST is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlhost)
 	}
 
 	if mysqlhost == "" {
@@ -263,7 +263,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
 	} else {
 		mysqlport = e.GetSecret("MYSQL_PORT")
-		log.Infof("MYSQL_PORT is unset. The value is **%s** in AWS Parameter store", mysqlport)
+		log.Infof("MYSQL_PORT is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlport)
 	}
 
 	if mysqlport == "" {
@@ -277,7 +277,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
 	} else {
 		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
-		log.Infof("BUGZILLA_DB_NAME is unset. The value is **%s** in AWS Parameter store", bugzillaDbName)
+		log.Infof("BUGZILLA_DB_NAME is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbName)
 	}
 
 	if bugzillaDbName == "" {
@@ -435,7 +435,7 @@ func (h handler) BasicEngine() http.Handler {
 
 func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
 	if unitID == "" {
-		return res, fmt.Errorf("id is unset")
+		return res, fmt.Errorf("the Bz unitID is unset")
 	}
 
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
