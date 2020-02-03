@@ -207,11 +207,10 @@ func (e Env) BugzillaDSN() string {
 	valbugzillaDbUser, ok := os.LookupEnv("BUGZILLA_DB_USER")
 	if ok {
 		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
-		log.Println("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 		bugzillaDbUser = valbugzillaDbUser
 	} else {
 		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
-		log.Println("BUGZILLA_DB_USER is unset. The value is %s in AWS Parameter store", bugzillaDbUser)
+		log.Infof("BUGZILLA_DB_USER is unset. The value is %s in AWS Parameter store", bugzillaDbUser)
 	}
 
 	if bugzillaDbUser == "" {
