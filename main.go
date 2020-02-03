@@ -109,6 +109,18 @@ func (e Env) GetSecret(key string) string {
 // -
 func NewConfig(cfg aws.Config) (e Env, err error) {
 
+	//var defaultRegion string
+	var debugdefaultRegion string
+	valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+	if ok {
+		//defaultRegion = valdefaultRegion
+		log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
+	} else {
+		debugdefaultRegion = e.GetSecret("DEFAULT_REGION")
+		log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
+	}
+
+
 	defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
 	// the AWS variable `DEFAULT_REGION` is in the format `ap-southeast-1`
 	// We can use the repo https://github.com/aws/aws-sdk-go/ to convert this to a format like `ApSoutheast1RegionID`
@@ -118,7 +130,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	}
 
 	cfg.Region = defaultRegion
-	log.Warnf("Env Region: %s", cfg.Region)
+	log.Infof("The AWS region for this environment has been set to: %s", cfg.Region)
 
 	// Save for ssm
 	e.Cfg = cfg
