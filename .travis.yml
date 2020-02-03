@@ -29,26 +29,34 @@ install:
  - sudo apt-get install jq -y
 
 script:
- - ./aws.env
+ # We configure a specific AWS profile for testing
+ # This will ONLY test the DEV configuration at this stage!
+ - aws configure set profile.travis-test-dev.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV
+ - aws configure set profile.travis-test-dev.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
+ - aws configure set profile.travis-test-dev.region $AWS_DEFAULT_REGION
+ - aws configure --profile travis-test-dev list
+ # We run the script that will define the environment variables we need for the test
+ - ./aws.env TRAVIS_AWS_PROFILE=travis-test-dev
+ # We run the go tests
  - go test -v ./...
 
 deploy:
  # dev
  - provider: script
-   script: aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV && aws configure set profile.$AWS_PROFILE_DEV.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV && aws configure set profile.$AWS_PROFILE_DEV.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_DEV list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV make dev
+   script: aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV && aws configure set profile.$AWS_PROFILE_DEV.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV && aws configure set profile.$AWS_PROFILE_DEV.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_DEV list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV && ./aws.env && make dev
    edge: true
    on:
      branch: master
  # demo
  - provider: script
-   script: aws configure set profile.$AWS_PROFILE_DEMO.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEMO && aws configure set profile.$AWS_PROFILE_DEMO.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEMO && aws configure set profile.$AWS_PROFILE_DEMO.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_DEMO list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEMO make demo
+   script: aws configure set profile.$AWS_PROFILE_DEMO.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEMO && aws configure set profile.$AWS_PROFILE_DEMO.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEMO && aws configure set profile.$AWS_PROFILE_DEMO.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_DEMO list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEMO && ./aws.env && make demo
    edge: true
    on:
      branch: master
      tags: true
  # prod
  - provider: script
-   script: aws configure set profile.$AWS_PROFILE_PROD aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && aws configure set profile.$AWS_PROFILE_PROD.aws_secret_access_key $AWS_ACCOUNT_SECRET_PROD && aws configure set profile.$AWS_PROFILE_PROD.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_PROD list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD make prod
+   script: aws configure set profile.$AWS_PROFILE_PROD aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && aws configure set profile.$AWS_PROFILE_PROD.aws_secret_access_key $AWS_ACCOUNT_SECRET_PROD && aws configure set profile.$AWS_PROFILE_PROD.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_PROD list && TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD && ./aws.env && make prod
    edge: true
    on:
      branch: master
