@@ -268,10 +268,11 @@ func (e Env) BugzillaDSN() string {
 		log.Fatal("BUGZILLA_DB_NAME is unset")
 	}
 
-	return fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?multiStatements=true&sql_mode=TRADITIONAL&timeout=5s&collation=utf8mb4_unicode_520_ci",
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&sql_mode=TRADITIONAL&timeout=5s&collation=utf8mb4_unicode_520_ci",
 		bugzillaDbUser,
 		bugzillaDbPassword,
 		mysqlhost,
+		mysqlport,
 		bugzillaDbName)
 }
 
