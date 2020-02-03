@@ -40,6 +40,7 @@ script:
  - aws configure set profile.travis-test-dev.region $AWS_DEFAULT_REGION
  - aws configure --profile travis-test-dev list
  # We run the script that will define the environment variables we need for the test
+ - export TRAVIS_AWS_PROFILE=travis-test-dev
  - ./aws.env
  # We run the go tests
  - go test -v ./...
