@@ -110,15 +110,15 @@ func (e Env) GetSecret(key string) string {
 func NewConfig(cfg aws.Config) (e Env, err error) {
 
 	//var defaultRegion string
-	var debugdefaultRegion string
-	valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
-	if ok {
+	//var debugdefaultRegion string
+	//valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+	//if ok {
 		//defaultRegion = valdefaultRegion
-		log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
-	} else {
-		debugdefaultRegion = e.GetSecret("DEFAULT_REGION")
-		log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
-	}
+	//	log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
+	//} else {
+	//	debugdefaultRegion = e.GetSecret("DEFAULT_REGION")
+	//	log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
+	//}
 
 
 	defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
@@ -144,7 +144,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	}
 
 	e.AccountID = aws.StringValue(result.Account)
-	log.Infof("Account ID: %s", result.Account)
+	log.Infof("The AWS Account ID for this environment is: %s", e.AccountID)
 
 	e.Stage = e.GetSecret("STAGE")
 
