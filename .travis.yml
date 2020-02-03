@@ -29,7 +29,7 @@ install:
  - sudo apt-get install jq -y
 
 script:
- - aws.env
+ - ./aws.env
  - go test -v ./...
 
 deploy:
