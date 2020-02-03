@@ -216,6 +216,19 @@ func (e Env) BugzillaDSN() string {
 		log.Fatal("BUGZILLA_DB_USER is unset")
 	}
 
+	var bugzillaDbPassword string
+	valbugzillaDbPassword, ok := os.LookupEnv("BUGZILLA_DB_PASSWORD")
+	if ok {
+		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
+		bugzillaDbPassword = valbugzillaDbPassword
+	} else {
+		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
+	}
+
+	if bugzillaDbPassword == "" {
+		log.Fatal("BUGZILLA_DB_PASSWORD is unset")
+	}
+
 	var mysqlhost string
 	val, ok := os.LookupEnv("MYSQL_HOST")
 	if ok {
@@ -229,10 +242,38 @@ func (e Env) BugzillaDSN() string {
 		log.Fatal("MYSQL_HOST is unset")
 	}
 
-	return fmt.Sprintf("%s:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL&timeout=5s&collation=utf8mb4_unicode_520_ci",
+	var mysqlport string
+	valmysqlport, ok := os.LookupEnv("MYSQL_PORT")
+	if ok {
+		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
+		mysqlport = valmysqlport
+	} else {
+		mysqlport = e.GetSecret("MYSQL_PORT")
+	}
+
+	if mysqlport == "" {
+		log.Fatal("MYSQL_PORT is unset")
+	}
+
+	var bugzillaDbName string
+	valbugzillaDbName, ok := os.LookupEnv("BUGZILLA_DB_NAME")
+	if ok {
+		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
+		bugzillaDbName = valbugzillaDbName
+	} else {
+		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
+	}
+
+	if bugzillaDbName == "" {
+		log.Fatal("BUGZILLA_DB_NAME is unset")
+	}
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&sql_mode=TRADITIONAL&timeout=5s&collation=utf8mb4_unicode_520_ci",
 		bugzillaDbUser,
-		e.GetSecret("BUGZILLA_DB_PASSWORD"),
-		mysqlhost)
+		bugzillaDbPassword,
+		mysqlhost,
+		mysqlport,
+		bugzillaDbName)
 }
 
 // Protect using: curl -H 'Authorization: Bearer secret' style
