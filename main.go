@@ -109,14 +109,14 @@ func (e Env) GetSecret(key string) string {
 // -
 func NewConfig(cfg aws.Config) (e Env, err error) {
 
-	valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
-	if ok {
+	//valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+	//if ok {
 	//	defaultRegion = valdefaultRegion
-		log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
-	} else {
-		debugdefaultRegion := e.GetSecret("DEFAULT_REGION")
-		log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
-	}
+	//	log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
+	//} else {
+	//	debugdefaultRegion := e.GetSecret("DEFAULT_REGION")
+	//	log.Infof("DEFAULT_REGION is unset. The value is **%s** in AWS Parameter store", debugdefaultRegion)
+	//}
 
 
 	defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
