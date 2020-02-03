@@ -209,10 +209,6 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 		bugzillaDbUser = valbugzillaDbUser
 	} else {
-		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
-	}
-
-	if bugzillaDbUser == "" {
 		log.Fatal("BUGZILLA_DB_USER is unset")
 	}
 
@@ -222,10 +218,6 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
 		bugzillaDbPassword = valbugzillaDbPassword
 	} else {
-		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
-	}
-
-	if bugzillaDbPassword == "" {
 		log.Fatal("BUGZILLA_DB_PASSWORD is unset")
 	}
 
@@ -235,10 +227,6 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
 		mysqlhost = valmysqlhost
 	} else {
-		mysqlhost = e.GetSecret("MYSQL_HOST")
-	}
-
-	if mysqlhost == "" {
 		log.Fatal("MYSQL_HOST is unset")
 	}
 
@@ -248,10 +236,6 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
 		mysqlport = valmysqlport
 	} else {
-		mysqlport = e.GetSecret("MYSQL_PORT")
-	}
-
-	if mysqlport == "" {
 		log.Fatal("MYSQL_PORT is unset")
 	}
 
@@ -261,10 +245,6 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
 		bugzillaDbName = valbugzillaDbName
 	} else {
-		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
-	}
-
-	if bugzillaDbName == "" {
 		log.Fatal("BUGZILLA_DB_NAME is unset")
 	}
 
