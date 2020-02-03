@@ -11,17 +11,25 @@
 # - LAMBDA_TO_RDS_SECURITY_GROUP
 # There are set as Environment variables when `aws.env` runs
 
+stage = $(STAGE)
+domain = $(DOMAIN)
+emailForNotificationUnit = $(EMAIL_FOR_NOTIFICATION_UNIT)
+privateSubnet1 = $(PRIVATE_SUBNET_1)
+privateSubnet2 = $(PRIVATE_SUBNET_2)
+privateSubnet3 = $(PRIVATE_SUBNET_3)
+lambdaToRdsSecurityGroup = $(LAMBDA_TO_RDS_SECURITY_GROUP)
+
 UPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
-		  |.stages.production |= (.domain = "unit.$(STAGE).$(DOMAIN)" | .zone = "$(STAGE).$(DOMAIN)") \
-		  | .actions[0].emails |= ["$(EMAIL_FOR_NOTIFICATION_UNIT)"] \
-		  | .lambda.vpc.subnets |= [ "$(PRIVATE_SUBNET_1)", "$(PRIVATE_SUBNET_2)", "$(PRIVATE_SUBNET_3)" ] \
-		  | .lambda.vpc.security_groups |= [ "$(LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
+		  |.stages.production |= (.domain = "unit.$(stage).$(domain)" | .zone = "$(stage).$(domain)") \
+		  | .actions[0].emails |= ["$(emailForNotificationUnit)"] \
+		  | .lambda.vpc.subnets |= [ "$(privateSubnet1)", "$(privateSubnet2)", "$(privateSubnet3)" ] \
+		  | .lambda.vpc.security_groups |= [ "$(lambdaToRdsSecurityGroup)" ]'
 
 PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
-		  |.stages.production |= (.domain = "unit.$(DOMAIN)" | .zone = "$(DOMAIN)") \
-		  | .actions[0].emails |= ["$(EMAIL_FOR_NOTIFICATION_UNIT)"] \
-		  | .lambda.vpc.subnets |= [ "$(PRIVATE_SUBNET_1)", "$(PRIVATE_SUBNET_2)", "$(PRIVATE_SUBNET_3)" ] \
-		  | .lambda.vpc.security_groups |= [ "$(LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
+		  |.stages.production |= (.domain = "unit.$(domain)" | .zone = "$(domain)") \
+		  | .actions[0].emails |= ["$(emailForNotificationUnit)"] \
+		  | .lambda.vpc.subnets |= [ "$(privateSubnet1)", "$(privateSubnet3)", "$(privateSubnet3)" ] \
+		  | .lambda.vpc.security_groups |= [ "$(lambdaToRdsSecurityGroup)" ]'
 
 # We have everything, we can run `up` now.
 
