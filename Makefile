@@ -31,7 +31,6 @@ PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 dev:
 	@echo $$AWS_ACCESS_KEY_ID
 	jq $(UPJSON) up.json.in > up.json
-	aws.env
 	up deploy production
 
 demo:
@@ -39,7 +38,6 @@ demo:
 	# We replace the relevant variable in the up.json file
 	# We use the template defined in up.json.in for that
 	jq $(UPJSON) up.json.in > up.json
-	aws.env
 	up deploy production
 
 prod:
@@ -47,7 +45,6 @@ prod:
 	# We replace the relevant variable in the up.json file
 	# We use the template defined in up.json.in for that
 	jq $(PRODUPJSON) up.json.in > up.json
-	aws.env
 	up deploy production
 
 test:

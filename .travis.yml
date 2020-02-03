@@ -24,17 +24,12 @@ before_install:
  - pip install --user awscli
  - export PATH=$PATH:$HOME/.local/bin
 
-services:
- - docker
-
 install:
  - go get -t ./...
  - sudo apt-get install jq -y
 
-after_success:
- - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-
 script:
+ - aws.env
  - go test -v ./...
 
 deploy:
