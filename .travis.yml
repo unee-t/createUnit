@@ -44,7 +44,14 @@ script:
 deploy:
  # dev
  - provider: script
-   script: aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV && aws configure set profile.$AWS_PROFILE_DEV.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV && aws configure set profile.$AWS_PROFILE_DEV.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_DEV list && export TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV && ./aws.env && make dev
+   script: 
+    - aws configure set profile.$AWS_PROFILE_DEV.aws_access_key_id $AWS_ACCOUNT_USER_ID_DEV 
+    - aws configure set profile.$AWS_PROFILE_DEV.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV 
+    - aws configure set profile.$AWS_PROFILE_DEV.region $AWS_DEFAULT_REGION 
+    - aws configure --profile $AWS_PROFILE_DEV list 
+    - export TRAVIS_AWS_PROFILE=$AWS_PROFILE_DEV 
+    - ./aws.env 
+    - make dev
    edge: true
    on:
      branch: merge_unee-t_ins_improvements
