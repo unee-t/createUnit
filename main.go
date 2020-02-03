@@ -203,6 +203,19 @@ func (e Env) Udomain(service string) string {
 }
 
 func (e Env) BugzillaDSN() string {
+	var bugzillaDbUser string
+	valbugzillaDbUser, ok := os.LookupEnv("BUGZILLA_DB_USER")
+	if ok {
+		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
+		bugzillaDbUser = valbugzillaDbUser
+	} else {
+		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
+	}
+
+	if bugzillaDbUser == "" {
+		log.Fatal("BUGZILLA_DB_USER is unset")
+	}
+
 	var mysqlhost string
 	val, ok := os.LookupEnv("MYSQL_HOST")
 	if ok {
@@ -217,7 +230,7 @@ func (e Env) BugzillaDSN() string {
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL&timeout=5s&collation=utf8mb4_unicode_520_ci",
-		e.GetSecret("BUGZILLA_DB_USER"),
+		bugzillaDbUser,
 		e.GetSecret("BUGZILLA_DB_PASSWORD"),
 		mysqlhost)
 }
