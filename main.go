@@ -110,8 +110,14 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	// the AWS variable `DEFAULT_REGION` is in the format `ap-southeast-1`
 	// We can use the repo https://github.com/aws/aws-sdk-go/ to convert this to a format like `ApSoutheast1RegionID`
 	// TODO - Check with @kai if the format `ap-southeast-1` is OK or if we need to transform that...
-	if !ok {
-		defaultRegion = endpoints.ApSoutheast1RegionID
+	if ok {
+		log.Infof("DEFAULT_REGION overridden by local env: %s", defaultRegion)
+	} else {
+		defaultRegion = e.GetSecret("DEFAULT_REGION")
+	}
+
+	if defaultRegion == "" {
+		log.Fatal("DEFAULT_REGION is unset")
 	}
 
 	cfg.Region = defaultRegion
