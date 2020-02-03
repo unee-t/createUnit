@@ -206,11 +206,11 @@ func (e Env) BugzillaDSN() string {
 	var bugzillaDbUser string
 	valbugzillaDbUser, ok := os.LookupEnv("BUGZILLA_DB_USER")
 	if ok {
-		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 		bugzillaDbUser = valbugzillaDbUser
+		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 	} else {
 		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
-		log.Infof("BUGZILLA_DB_USER is unset. The value is %s in AWS Parameter store", bugzillaDbUser)
+		log.Infof("BUGZILLA_DB_USER is unset. The value is **%s** in AWS Parameter store", bugzillaDbUser)
 	}
 
 	if bugzillaDbUser == "" {
@@ -220,10 +220,11 @@ func (e Env) BugzillaDSN() string {
 	var bugzillaDbPassword string
 	valbugzillaDbPassword, ok := os.LookupEnv("BUGZILLA_DB_PASSWORD")
 	if ok {
-		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
 		bugzillaDbPassword = valbugzillaDbPassword
+		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
 	} else {
 		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
+		log.Infof("BUGZILLA_DB_PASSWORD is unset. The value is **hidden_secret** in AWS Parameter store")
 	}
 
 	if bugzillaDbPassword == "" {
@@ -233,10 +234,11 @@ func (e Env) BugzillaDSN() string {
 	var mysqlhost string
 	valmysqlhost, ok := os.LookupEnv("MYSQL_HOST")
 	if ok {
-		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
 		mysqlhost = valmysqlhost
+		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
 	} else {
 		mysqlhost = e.GetSecret("MYSQL_HOST")
+		log.Infof("MYSQL_HOST is unset. The value is **%s** in AWS Parameter store", mysqlhost)
 	}
 
 	if mysqlhost == "" {
@@ -246,10 +248,11 @@ func (e Env) BugzillaDSN() string {
 	var mysqlport string
 	valmysqlport, ok := os.LookupEnv("MYSQL_PORT")
 	if ok {
-		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
 		mysqlport = valmysqlport
+		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
 	} else {
 		mysqlport = e.GetSecret("MYSQL_PORT")
+		log.Infof("MYSQL_PORT is unset. The value is **%s** in AWS Parameter store", mysqlport)
 	}
 
 	if mysqlport == "" {
@@ -259,10 +262,11 @@ func (e Env) BugzillaDSN() string {
 	var bugzillaDbName string
 	valbugzillaDbName, ok := os.LookupEnv("BUGZILLA_DB_NAME")
 	if ok {
-		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
 		bugzillaDbName = valbugzillaDbName
+		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
 	} else {
 		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
+		log.Infof("BUGZILLA_DB_NAME is unset. The value is **%s** in AWS Parameter store", bugzillaDbName)
 	}
 
 	if bugzillaDbName == "" {
