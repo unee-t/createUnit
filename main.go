@@ -346,7 +346,7 @@ func New() (h handler, err error) {
 
 	h = handler{
 		DSN:            e.BugzillaDSN(), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
-		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
+		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
 		Code:           e.Code,
 	}
 
