@@ -25,7 +25,7 @@ before_install:
 # - export PATH=$PATH:$HOME/.local/bin
 
 install:
- - go get -t ./...
+ - go get -t
  - sudo apt-get install jq -y
 
 script:
@@ -39,7 +39,7 @@ script:
  - export TRAVIS_AWS_PROFILE=travis-test-dev
  - ./aws.env
  # We run the go tests
- - go test -v ./...
+ - go test -v
 
 deploy:
  # dev
