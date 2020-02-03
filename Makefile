@@ -11,13 +11,13 @@
 # - LAMBDA_TO_RDS_SECURITY_GROUP
 # There are set as Environment variables when `aws.env` runs
 
-stage = ${STAGE}
-domain = ${DOMAIN}
-emailForNotificationUnit = ${EMAIL_FOR_NOTIFICATION_UNIT}
-privateSubnet1 = ${PRIVATE_SUBNET_1}
-privateSubnet2 = ${PRIVATE_SUBNET_2}
-privateSubnet3 = ${PRIVATE_SUBNET_3}
-lambdaToRdsSecurityGroup = ${LAMBDA_TO_RDS_SECURITY_GROUP}
+stage=${STAGE}
+domain=${DOMAIN}
+emailForNotificationUnit=${EMAIL_FOR_NOTIFICATION_UNIT}
+privateSubnet1=${PRIVATE_SUBNET_1}
+privateSubnet2=${PRIVATE_SUBNET_2}
+privateSubnet3=${PRIVATE_SUBNET_3}
+lambdaToRdsSecurityGroup=${LAMBDA_TO_RDS_SECURITY_GROUP}
 
 UPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  |.stages.production |= (.domain = "unit.$(stage).$(domain)" | .zone = "$(stage).$(domain)") \
