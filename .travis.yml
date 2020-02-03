@@ -17,7 +17,7 @@
 language: go
 
 go:
- - 1.12.x
+ - 1.13.x
 
 before_install:
  - curl -sf https://up.apex.sh/install | sudo sh
@@ -64,4 +64,4 @@ deploy:
      tags: true
 
 env:
- - GO112MODULE=on
+ - GO113MODULE=on
