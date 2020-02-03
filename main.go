@@ -230,10 +230,10 @@ func (e Env) BugzillaDSN() string {
 	}
 
 	var mysqlhost string
-	val, ok := os.LookupEnv("MYSQL_HOST")
+	valmysqlhost, ok := os.LookupEnv("MYSQL_HOST")
 	if ok {
-		log.Infof("MYSQL_HOST overridden by local env: %s", val)
-		mysqlhost = val
+		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
+		mysqlhost = valmysqlhost
 	} else {
 		mysqlhost = e.GetSecret("MYSQL_HOST")
 	}
@@ -268,10 +268,11 @@ func (e Env) BugzillaDSN() string {
 		log.Fatal("BUGZILLA_DB_NAME is unset")
 	}
 
-	return fmt.Sprintf("%s:%s@tcp(%s:3306)/bugzilla?multiStatements=true&sql_mode=TRADITIONAL&timeout=15s&collation=utf8mb4_unicode_520_ci",
+	return fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?multiStatements=true&sql_mode=TRADITIONAL&timeout=15s&collation=utf8mb4_unicode_520_ci",
 		bugzillaDbUser,
 		bugzillaDbPassword,
-		mysqlhost)
+		mysqlhost,
+		bugzillaDbName)
 }
 
 // Protect using: curl -H 'Authorization: Bearer secret' style
