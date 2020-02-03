@@ -204,12 +204,13 @@ func (e Env) Udomain(service string) string {
 
 func (e Env) BugzillaDSN() string {
 	var bugzillaDbUser string
-	valbugzillaDbUser, ok := os.LookupEnv("BUGZILLA_DB_USER")
+	valbugzillaDbUser, ok := os.LookupEnv(BUGZILLA_DB_USER)
 	if ok {
 		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
 		bugzillaDbUser = valbugzillaDbUser
 	} else {
-		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
+		log.Fatal("BUGZILLA_DB_USER is unset")
+		//bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
 	}
 
 	if bugzillaDbUser == "" {
@@ -217,7 +218,7 @@ func (e Env) BugzillaDSN() string {
 	}
 
 	var bugzillaDbPassword string
-	valbugzillaDbPassword, ok := os.LookupEnv("BUGZILLA_DB_PASSWORD")
+	valbugzillaDbPassword, ok := os.LookupEnv(BUGZILLA_DB_PASSWORD)
 	if ok {
 		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
 		bugzillaDbPassword = valbugzillaDbPassword
