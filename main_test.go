@@ -34,6 +34,11 @@ func hasHeader(key, want string) checkFunc {
 
 func TestConnected(t *testing.T) {
 	h, _ := New()
+	h, err := New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	defer h.db.Close()
 
 	check := func(fns ...checkFunc) []checkFunc { return fns }
