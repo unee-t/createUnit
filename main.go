@@ -83,7 +83,7 @@ func NewDbConnexion() (h handler, err error) {
 
 	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
 	if err != nil {
-		log.WithError(err).Fatal("setting up credentials")
+		log.WithError(err).Fatal("NewDbConnexion Fatal: We do not have the AWS credentials")
 		return
 	}
 
@@ -98,21 +98,28 @@ func NewDbConnexion() (h handler, err error) {
 		cfg.Region = defaultRegion
 		log.Infof("NewDbConnexion Log: The AWS region for this environment has been set to: %s", cfg.Region)
 
+	// We get the value for the API_ACCESS_TOKEN
+		apiAccessToken, ok := os.LookupEnv("API_ACCESS_TOKEN")
+		if ok {
+			log.Infof("NewDbConnexion Log: API_ACCESS_TOKEN was overridden by local env: **hidden secret**")
+		} else {
+			log.Fatal("NewDbConnexion fatal: API_ACCESS_TOKEN is unset as an environment variable, this is a fatal problem")
+		}
 
 	e, err := env.NewConfig(cfg)
 	if err != nil {
-		log.WithError(err).Warn("error getting unee-t env")
+		log.WithError(err).Warn("NewDbConnexion Warning: error getting some of the parameters for that environment")
 	}
 
 	h = handler{
 		DSN:            e.BugzillaDSN(), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
-		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"), // `GetSecret` is a function that is defined in the uneet/env/main.go dependency.
+		APIAccessToken: apiAccessToken,
 		Code:           e.Code,
 	}
 
 	h.db, err = sql.Open("mysql", h.DSN)
 	if err != nil {
-		log.WithError(err).Fatal("error opening database")
+		log.WithError(err).Fatal("NewDbConnexion fatal: error opening database")
 		return
 	}
 
