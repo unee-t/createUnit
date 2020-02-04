@@ -106,7 +106,7 @@ func (e Env) GetSecret(key string) string {
 // NewConfig setups the configuration assuming various parameters have been setup in the AWS account
 // - DEFAULT_REGION
 // - STAGE
-// -
+
 func NewConfig(cfg aws.Config) (e Env, err error) {
 	// Save for ssm
 		e.Cfg = cfg
@@ -143,7 +143,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 			log.Infof("STAGE was overridden by local env: %s", stage)
 		} else {
 			stage = e.GetSecret("STAGE")
-			log.Infof("STAGE is unset as an environment variable. The value is **%s** in AWS Parameter store", stage)
+			log.Fatal("STAGE is unset as an environment variable, this is a fatal problem")
 		}
 
 		if stage == "" {
@@ -226,13 +226,7 @@ func (e Env) BugzillaDSN() string {
 		bugzillaDbUser = valbugzillaDbUser
 		log.Infof("BUGZILLA_DB_USER was overridden by local env: %s", valbugzillaDbUser)
 	} else {
-		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
-		log.Infof("BUGZILLA_DB_USER is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbUser)
-		log.Infof("The environment variable for BUGZILLA_DB_USER is: %s", os.Getenv("BUGZILLA_DB_USER"))
-	}
-
-	if bugzillaDbUser == "" {
-		log.Fatal("BUGZILLA_DB_USER is unset")
+		log.Fatal("BUGZILLA_DB_USER is unset as an environment variable, this is a fatal problem")
 	}
 
 	var bugzillaDbPassword string
@@ -241,12 +235,7 @@ func (e Env) BugzillaDSN() string {
 		bugzillaDbPassword = valbugzillaDbPassword
 		log.Infof("BUGZILLA_DB_PASSWORD was overridden by local env: **hidden_secret**")
 	} else {
-		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
-		log.Infof("BUGZILLA_DB_PASSWORD is unset as an environment variable. The value is **hidden_secret** in AWS Parameter store")
-	}
-
-	if bugzillaDbPassword == "" {
-		log.Fatal("BUGZILLA_DB_PASSWORD is unset")
+		log.Fatal("BUGZILLA_DB_PASSWORD is unset as an environment variable, this is a fatal problem")
 	}
 
 	var mysqlhost string
@@ -256,11 +245,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_HOST was overridden by local env: %s", valmysqlhost)
 	} else {
 		mysqlhost = e.GetSecret("MYSQL_HOST")
-		log.Infof("MYSQL_HOST is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlhost)
-	}
-
-	if mysqlhost == "" {
-		log.Fatal("MYSQL_HOST is unset")
+		log.Fatal("MYSQL_HOST is unset as an environment variable, this is a fatal problem")
 	}
 
 	var mysqlport string
@@ -270,11 +255,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("MYSQL_PORT was overridden by local env: %s", valmysqlport)
 	} else {
 		mysqlport = e.GetSecret("MYSQL_PORT")
-		log.Infof("MYSQL_PORT is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlport)
-	}
-
-	if mysqlport == "" {
-		log.Fatal("MYSQL_PORT is unset")
+		log.Fatal("MYSQL_PORT is unset as an environment variable, this is a fatal problem")
 	}
 
 	var bugzillaDbName string
@@ -284,11 +265,7 @@ func (e Env) BugzillaDSN() string {
 		log.Infof("BUGZILLA_DB_NAME was overridden by local env: %s", valbugzillaDbName)
 	} else {
 		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
-		log.Infof("BUGZILLA_DB_NAME is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbName)
-	}
-
-	if bugzillaDbName == "" {
-		log.Fatal("BUGZILLA_DB_NAME is unset")
+		log.Fatal("BUGZILLA_DB_NAME is unset as an environment variable, this is a fatal problem")
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?multiStatements=true&sql_mode=TRADITIONAL&timeout=15s&collation=utf8mb4_unicode_520_ci",
@@ -355,9 +332,8 @@ func (h handler) step1Insert(unit unit) (err error) {
 	return
 }
 
-// New setups the configuration assuming various parameters have been setup in the AWS account
-// TO DO: REVIEW THIS <-- VERY SIMILAR TO THE NewConfig FUNCTION!!!
-// ALSO A LOT OF HARDCODED VALUES HERE...
+// NewDbConnexion setups the configuration assuming various parameters have been setup in the AWS account
+// TO DO: REVIEW THIS A LOT OF HARDCODED VALUES HERE...
 func NewDbConnexion() (h handler, err error) {
 
 	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
