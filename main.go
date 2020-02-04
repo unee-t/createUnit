@@ -131,7 +131,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 			defaultRegion = endpoints.ApSoutheast1RegionID
 			log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
 		} else {
-			log.Infof("DEFAULT_REGION is unset as an environment variable")
+			log.Infof("DEFAULT_REGION was overridden by local env: %s", stage)
 		}
 
 		cfg.Region = defaultRegion
@@ -356,7 +356,9 @@ func (h handler) step1Insert(unit unit) (err error) {
 }
 
 // New setups the configuration assuming various parameters have been setup in the AWS account
-func New() (h handler, err error) {
+// TO DO: REVIEW THIS <-- VERY SIMILAR TO THE NewConfig FUNCTION!!!
+// ALSO A LOT OF HARDCODED VALUES HERE...
+func NewDbConnexion() (h handler, err error) {
 
 	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
 	if err != nil {
@@ -371,7 +373,7 @@ func New() (h handler, err error) {
 
 	h = handler{
 		DSN:            e.BugzillaDSN(), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
-		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
+		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"), // `GetSecret` is a function that is defined in the uneet/env/main.go dependency.
 		Code:           e.Code,
 	}
 
@@ -414,7 +416,7 @@ func New() (h handler, err error) {
 }
 
 func main() {
-	h, err := New()
+	h, err := NewDbConnexion()
 	if err != nil {
 		log.WithError(err).Fatal("error setting configuration")
 		return
