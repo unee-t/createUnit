@@ -336,7 +336,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 		}
 		results = append(results, ProductID)
 	}
-	log.Infof("results: %#v", results)
+	log.Infof("createUnit Info: we have created the unit: %#v", results)
 	response.OK(w, results)
 
 }
