@@ -78,14 +78,21 @@ func (h handler) step1Insert(unit unit) (err error) {
 }
 
 // NewDbConnexion setups the configuration assuming various parameters have been setup in the AWS account
-// TO DO: REVIEW THIS A LOT OF HARDCODED VALUES HERE...
 func NewDbConnexion() (h handler, err error) {
 
-	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
-	if err != nil {
-		log.WithError(err).Fatal("NewDbConnexion Fatal: We do not have the AWS credentials")
-		return
-	}
+	// We check if the AWS CLI profile we need has been setup in this environment
+		awsCliProfile, ok := os.LookupEnv("TRAVIS_AWS_PROFILE")
+		if ok {
+			log.Infof("NewDbConnexion Log: the AWS CLI profile we use is: %s", awsCliProfile)
+		} else {
+			log.Fatal("NewDbConnexion Fatal: the AWS CLI profile is unset as an environment variable, this is a fatal problem")
+		}
+
+		cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile(awsCliProfile))
+		if err != nil {
+			log.WithError(err).Fatal("NewDbConnexion Fatal: We do not have the AWS credentials we need")
+			return
+		}
 
 	// We get the value for the DEFAULT_REGION
 		defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
