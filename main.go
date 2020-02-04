@@ -131,7 +131,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 			defaultRegion = endpoints.ApSoutheast1RegionID
 			log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
 		} else {
-			log.Infof("DEFAULT_REGION was overridden by local env: %s", stage)
+			log.Infof("DEFAULT_REGION was overridden by local env: %s", defaultRegion)
 		}
 
 		cfg.Region = defaultRegion
