@@ -35,7 +35,7 @@ script:
  - aws configure set profile.travis-test-dev.aws_secret_access_key $AWS_ACCOUNT_SECRET_DEV
  - aws configure set profile.travis-test-dev.region $AWS_DEFAULT_REGION
  - aws configure --profile travis-test-dev list
- # We run the script that will define the environment variables we need for the test
+ # We run the script that will define the environment variables we need
  - export TRAVIS_AWS_PROFILE=travis-test-dev
  - source ./aws.env
  # Test if the variables are correctly set as environment variables

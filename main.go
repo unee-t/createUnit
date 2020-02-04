@@ -108,59 +108,65 @@ func (e Env) GetSecret(key string) string {
 // - STAGE
 // -
 func NewConfig(cfg aws.Config) (e Env, err error) {
-
-	//valdefaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
-	//if ok {
-	//	defaultRegion = valdefaultRegion
-	//	log.Infof("DEFAULT_REGION overridden by local env: %s", valdefaultRegion)
-	//} else {
-	//	debugdefaultRegion := e.GetSecret("DEFAULT_REGION")
-	//	log.Infof("DEFAULT_REGION is unset as an environment variable. The value is **%s** in AWS Parameter store", debugdefaultRegion)
-	//}
-
-
-	defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
-	// the AWS variable `DEFAULT_REGION` is in the format `ap-southeast-1`
-	// We can use the repo https://github.com/aws/aws-sdk-go/ to convert this to a format like `ApSoutheast1RegionID`
-	// TODO - Check with @kai if the format `ap-southeast-1` is OK or if we need to transform that...
-	if !ok {
-		defaultRegion = endpoints.ApSoutheast1RegionID
-		log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
-	}
-
-	cfg.Region = defaultRegion
-	log.Infof("The AWS region for this environment has been set to: %s", cfg.Region)
-
 	// Save for ssm
-	e.Cfg = cfg
+		e.Cfg = cfg
 
-	svc := sts.New(cfg)
-	input := &sts.GetCallerIdentityInput{}
-	req := svc.GetCallerIdentityRequest(input)
-	result, err := req.Send(context.TODO())
-	if err != nil {
-		return e, err
-	}
+		svc := sts.New(cfg)
+		input := &sts.GetCallerIdentityInput{}
+		req := svc.GetCallerIdentityRequest(input)
+		result, err := req.Send(context.TODO())
+		if err != nil {
+			return e, err
+		}
 
-	e.AccountID = aws.StringValue(result.Account)
-	log.Infof("The AWS Account ID for this environment is: %s", e.AccountID)
+	// We get the ID of the AWS account we use
+		e.AccountID = aws.StringValue(result.Account)
+		log.Infof("The AWS Account ID for this environment is: %s", e.AccountID)
 
-	e.Stage = e.GetSecret("STAGE")
+	// We get the value for the DEFAULT_REGION
+		defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+		// the endpoints function converts the value `ApSoutheast1RegionID` in the format `ap-southeast-1`
+		// TO DO REPLACE THIS HARDCODED VALUE FOR THE AWS REGION
+		if !ok {
+			defaultRegion = endpoints.ApSoutheast1RegionID
+			log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
+		} else {
+			log.Infof("DEFAULT_REGION is unset as an environment variable")
+		}
 
-	switch e.Stage {
-	case "dev":
-		e.Code = EnvDev
-		return e, nil
-	case "prod":
-		e.Code = EnvProd
-		return e, nil
-	case "demo":
-		e.Code = EnvDemo
-		return e, nil
-	default:
-		log.WithField("stage", e.Stage).Error("unknown stage")
-		return e, nil
-	}
+		cfg.Region = defaultRegion
+		log.Infof("The AWS region for this environment has been set to: %s", cfg.Region)
+
+	// We get the value for the STAGE
+		stage, ok := os.LookupEnv("STAGE")
+		if ok {
+			log.Infof("STAGE overridden by local env: %s", stage)
+		} else {
+			stage = e.GetSecret("STAGE")
+			log.Infof("STAGE is unset as an environment variable. The value is **%s** in AWS Parameter store", stage)
+		}
+
+		if stage == "" {
+			log.Fatal("STAGE is unset")
+		}
+
+		e.Stage = stage
+
+	// Based on the value of the STAGE variable we do different things
+		switch e.Stage {
+		case "dev":
+			e.Code = EnvDev
+			return e, nil
+		case "prod":
+			e.Code = EnvProd
+			return e, nil
+		case "demo":
+			e.Code = EnvDemo
+			return e, nil
+		default:
+			log.WithField("stage", e.Stage).Error("unknown stage")
+			return e, nil
+		}
 }
 
 func (e Env) Bucket(svc string) string {
