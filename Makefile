@@ -1,12 +1,9 @@
 # We create a function to simplify getting variables for aws parameter store.
 # The variable TRAVIS_AWS_PROFILE is set when .travis.yml runs
-
-define ssm
-$(shell aws --profile $(TRAVIS_AWS_PROFILE) ssm get-parameters --names $1 --with-decryption --query Parameters[0].Value --output text)
-endef
-
+#
 # We prepare variables for up in UPJSON and PRODUPJSON.
-# These variables are comming from AWS Parameter Store
+# The variables needed up in UPJSON and PRODUPJSON are set when `source ./aws.env` runs
+# These variables can be edited in the AWS parameter store for the environment
 # - STAGE
 # - DOMAIN
 # - EMAIL_FOR_NOTIFICATION_UNIT
@@ -16,16 +13,16 @@ endef
 # - LAMBDA_TO_RDS_SECURITY_GROUP
 
 UPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
-		  |.stages.production |= (.domain = "unit.$(call ssm,STAGE).$(call ssm,DOMAIN)" | .zone = "$(call ssm,STAGE).$(call ssm,DOMAIN)") \
-		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_UNIT)"] \
-		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
-		  | .lambda.vpc.security_groups |= [ "$(call ssm,LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
+		  |.stages.production |= (.domain = "unit.$(STAGE).$(DOMAIN)" | .zone = "$(STAGE).$(DOMAIN)") \
+		  | .actions[0].emails |= ["unit+$(EMAIL_FOR_NOTIFICATION_UNIT)"] \
+		  | .lambda.vpc.subnets |= [ "$(PRIVATE_SUBNET_1)", "$(PRIVATE_SUBNET_2)", "$(PRIVATE_SUBNET_3)" ] \
+		  | .lambda.vpc.security_groups |= [ "$(LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
 
 PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
-		  |.stages.production |= (.domain = "unit.$(call ssm,DOMAIN)" | .zone = "$(call ssm,DOMAIN)") \
-		  | .actions[0].emails |= ["unit+$(call ssm,EMAIL_FOR_NOTIFICATION_UNIT)"] \
-		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
-		  | .lambda.vpc.security_groups |= [ "$(call ssm,LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
+		  |.stages.production |= (.domain = "unit.$(DOMAIN)" | .zone = "$(DOMAIN)") \
+		  | .actions[0].emails |= ["unit+$(EMAIL_FOR_NOTIFICATION_UNIT)"] \
+		  | .lambda.vpc.subnets |= [ "$(PRIVATE_SUBNET_1)", "$(PRIVATE_SUBNET_2)", "$(PRIVATE_SUBNET_3)" ] \
+		  | .lambda.vpc.security_groups |= [ "$(LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
 # We have everything, we can run up now.
 
 dev:
@@ -48,4 +45,4 @@ prod:
 	up deploy production
 
 test:
-	curl -i -H "Authorization: Bearer $(call ssm,API_ACCESS_TOKEN)" https://unit.$(call ssm,STAGE).$(call ssm,DOMAIN)/metrics
+	curl -i -H "Authorization: Bearer $(API_ACCESS_TOKEN)" https://unit.$(STAGE).$(DOMAIN)/metrics
