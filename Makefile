@@ -1,9 +1,6 @@
-# We create a function to simplify getting variables for aws parameter store.
 # The variable TRAVIS_AWS_PROFILE is set when .travis.yml runs
-#
-# We prepare variables for up in UPJSON and PRODUPJSON.
-# The variables needed up in UPJSON and PRODUPJSON are set when `source ./aws.env` runs
-# These variables can be edited in the AWS parameter store for the environment
+
+# The other variables needed up in UPJSON and PRODUPJSON are set when `source ./aws.env` runs
 # - STAGE
 # - DOMAIN
 # - EMAIL_FOR_NOTIFICATION_UNIT
@@ -11,6 +8,7 @@
 # - PRIVATE_SUBNET_2
 # - PRIVATE_SUBNET_3
 # - LAMBDA_TO_RDS_SECURITY_GROUP
+# These variables can be edited in the AWS parameter store for the environment
 
 UPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  |.stages.production |= (.domain = "unit.$(STAGE).$(DOMAIN)" | .zone = "$(STAGE).$(DOMAIN)") \
