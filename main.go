@@ -92,7 +92,7 @@ func NewDbConnexion() (h handler, err error) {
 		if ok {
 			log.Infof("NewDbConnexion Log: DEFAULT_REGION was overridden by local env: %s", defaultRegion)
 		} else {
-			log.Fatal("NewDbConnexion fatal: DEFAULT_REGION is unset as an environment variable, this is a fatal problem")
+			log.Fatal("NewDbConnexion Fatal: DEFAULT_REGION is unset as an environment variable, this is a fatal problem")
 		}
 
 		cfg.Region = defaultRegion
@@ -103,7 +103,7 @@ func NewDbConnexion() (h handler, err error) {
 		if ok {
 			log.Infof("NewDbConnexion Log: API_ACCESS_TOKEN was overridden by local env: **hidden secret**")
 		} else {
-			log.Fatal("NewDbConnexion fatal: API_ACCESS_TOKEN is unset as an environment variable, this is a fatal problem")
+			log.Fatal("NewDbConnexion Fatal: API_ACCESS_TOKEN is unset as an environment variable, this is a fatal problem")
 		}
 
 	e, err := env.NewConfig(cfg)
@@ -148,7 +148,7 @@ func NewDbConnexion() (h handler, err error) {
 
 	err = prometheus.Register(microservicecheck)
 	if err != nil {
-		log.Warn("prom already registered")
+		log.Warn("NewDbConnexion Warning: prom already registered")
 	}
 
 	return
@@ -158,14 +158,14 @@ func NewDbConnexion() (h handler, err error) {
 func main() {
 	h, err := NewDbConnexion()
 	if err != nil {
-		log.WithError(err).Fatal("error setting configuration")
+		log.WithError(err).Fatal("Unit API main Fatal: error setting configuration")
 		return
 	}
 	defer h.db.Close()
 	addr := ":" + os.Getenv("PORT")
 	app := h.BasicEngine()
 	if err := http.ListenAndServe(addr, app); err != nil {
-		log.WithError(err).Fatal("error listening")
+		log.WithError(err).Fatal("Unit API main Error: error listening")
 	}
 }
 
@@ -184,7 +184,7 @@ func (h handler) BasicEngine() http.Handler {
 
 func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
 	if unitID == "" {
-		return res, fmt.Errorf("the Bz unitID is unset")
+		return res, fmt.Errorf("runsql Error: the Bz unitID is unset")
 	}
 
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
@@ -192,14 +192,14 @@ func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err erro
 		return
 	}
 
-	log.Infof("Running %s with unit id %v with env %d", sqlfile, unitID, h.Code)
+	log.Infof("runsql Error: We are running the SQL file %s with the BZ unit id %v with env %d", sqlfile, unitID, h.Code)
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
 	return res, err
 }
 
 func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) {
 	if u.MefeUnitID == "" {
-		return res, fmt.Errorf("mefe_unit_id is unset")
+		return res, fmt.Errorf("runsqlUnit Error: we cannot proceed: the mefe_unit_id is unset")
 	}
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
 	if err != nil {
@@ -209,7 +209,7 @@ func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) 
 		"unit": u,
 		"env":  h.Code,
 		"sql":  sqlfile,
-	}).Info("exec")
+	}).Info("runsqlUnit Info: we have executed the sql script")
 
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, h.Code))
 	return res, err
@@ -232,14 +232,14 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 	var metas []unitMetaData
 	err := decoder.Decode(&metas)
 	if err != nil {
-		log.WithError(err).Error("input error")
-		response.BadRequest(w, "Invalid JSON")
+		log.WithError(err).Error("disableUnit Error: There is an input error - Invalid JSON")
+		response.BadRequest(w, "disableUnit BadRequest: We cannot process Invalid JSON")
 		return
 	}
 	defer r.Body.Close()
 
 	if len(metas) < 1 {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "disableUnit BadRequest: this is an Empty payload")
 		return
 	}
 
@@ -251,11 +251,11 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 		})
 		_, err := h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
+			ctx.WithError(err).Errorf("disableUnit Error: The script unit_disable_existing.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
-		ctx.Info("ran unit_disable_existing.sql")
+		ctx.Info("disableUnit Log: we ran the script unit_disable_existing.sql")
 	}
 	response.OK(w, metas)
 }
@@ -263,7 +263,7 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body == nil {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "createUnit BadRequest: cannot create a unit with an empty payload")
 		return
 	}
 
@@ -271,14 +271,14 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	var units []unit
 	err := decoder.Decode(&units)
 	if err != nil {
-		log.WithError(err).Error("input error")
-		response.BadRequest(w, "Invalid JSON")
+		log.WithError(err).Error("createUnit BadRequest: there is an input error - the payload sent is not valid JSON")
+		response.BadRequest(w, "createUnit BadRequest: The payload sent is not valid JSON")
 		return
 	}
 	defer r.Body.Close()
 
 	if len(units) < 1 {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "createUnit BadRequest: the value for the unit seem incorrect (< 1)")
 		return
 	}
 
@@ -293,7 +293,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		if unit.MefeUnitID == "" {
 			ctx.Error("missing ID")
-			response.BadRequest(w, "Missing ID")
+			response.BadRequest(w, "createUnit BadRequest: we have no value for the MefeUnitID")
 			return
 		}
 
@@ -305,25 +305,25 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		err = h.step1Insert(unit)
 		if err != nil {
-			ctx.WithError(err).Error("failed to run step1Insert")
+			ctx.WithError(err).Error("createUnit Error: failed to run the function `step1Insert`(insert information from the MEFE into the BZ database so we can create the unit)")
 			response.InternalServerError(w, err.Error())
 			return
 		}
 
-		ctx.Info("inserted")
+		ctx.Info("createUnit Info: a new Unit has been inserted into the BZ database")
 
 		start := time.Now()
 		_, err = h.runsqlUnit("unit_create_new.sql", unit)
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			ctx.WithError(err).Errorf("createUnit Error: the script unit_create_new.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
 
-		ctx.WithField("duration", time.Since(start).String()).Infof("ran unit_create_new.sql")
+		ctx.WithField("duration", time.Since(start).String()).Infof("createUnit Log: We ran the script unit_create_new.sql")
 		ProductID, err = h.getProductID(unit.MefeUnitID)
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			ctx.WithError(err).Errorf("createUnit Error: the script unit_create_new.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
