@@ -125,13 +125,10 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 
 	// We get the value for the DEFAULT_REGION
 		defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
-		// the endpoints function converts the value `ApSoutheast1RegionID` in the format `ap-southeast-1`
-		// TO DO REPLACE THIS HARDCODED VALUE FOR THE AWS REGION
-		if !ok {
-			defaultRegion = endpoints.ApSoutheast1RegionID
-			log.Infof("DEFAULT_REGION is unset as an environment variable. The value is hardcoded in the main.go file: ", defaultRegion)
-		} else {
+		if ok {
 			log.Infof("DEFAULT_REGION was overridden by local env: %s", defaultRegion)
+		} else {
+			log.Fatal("DEFAULT_REGION is unset as an environment variable, this is a fatal problem")
 		}
 
 		cfg.Region = defaultRegion
@@ -142,12 +139,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 		if ok {
 			log.Infof("STAGE was overridden by local env: %s", stage)
 		} else {
-			stage = e.GetSecret("STAGE")
 			log.Fatal("STAGE is unset as an environment variable, this is a fatal problem")
-		}
-
-		if stage == "" {
-			log.Fatal("STAGE is unset")
 		}
 
 		e.Stage = stage
