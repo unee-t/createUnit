@@ -28,6 +28,7 @@ PRODUPJSON = '.profile |= "$(TRAVIS_AWS_PROFILE)" \
 		  | .actions[0].emails |= ["$(call ssm,EMAIL_FOR_NOTIFICATION_UNIT)"] \
 		  | .lambda.vpc.subnets |= [ "$(call ssm,PRIVATE_SUBNET_1)", "$(call ssm,PRIVATE_SUBNET_2)", "$(call ssm,PRIVATE_SUBNET_3)" ] \
 		  | .lambda.vpc.security_groups |= [ "$(call ssm,LAMBDA_TO_RDS_SECURITY_GROUP)" ]'
+
 # We have everything, we can run up now.
 
 dev:

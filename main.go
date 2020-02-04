@@ -9,7 +9,6 @@ import (
 	"time"
 
 	jsonhandler "github.com/apex/log/handlers/json"
-	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
@@ -87,7 +86,19 @@ func NewDbConnexion() (h handler, err error) {
 		log.WithError(err).Fatal("setting up credentials")
 		return
 	}
-	cfg.Region = endpoints.ApSoutheast1RegionID
+
+	// We get the value for the DEFAULT_REGION
+		defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+		if ok {
+			log.Infof("NewDbConnexion Log: DEFAULT_REGION was overridden by local env: %s", defaultRegion)
+		} else {
+			log.Fatal("NewDbConnexion fatal: DEFAULT_REGION is unset as an environment variable, this is a fatal problem")
+		}
+
+		cfg.Region = defaultRegion
+		log.Infof("NewDbConnexion Log: The AWS region for this environment has been set to: %s", cfg.Region)
+
+
 	e, err := env.NewConfig(cfg)
 	if err != nil {
 		log.WithError(err).Warn("error getting unee-t env")
