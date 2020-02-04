@@ -38,6 +38,8 @@ script:
  # We run the script that will define the environment variables we need for the test
  - export TRAVIS_AWS_PROFILE=travis-test-dev
  - ./aws.env
+ # Test if the variables are correctly set as environment variables
+ - ./aws.env.test
  # We run the go tests
  - go test -v
 
