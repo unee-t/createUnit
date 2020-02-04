@@ -84,7 +84,7 @@ func (e Env) GetSecret(key string) string {
 
 	val, ok := os.LookupEnv(key)
 	if ok {
-		log.Warnf("%s overridden by local env: %s", key, val)
+		log.Warnf("No need to query AWS parameter store: %s overridden by local env", key)
 		return val
 	}
 	// Ideally environment above is set to avoid costly ssm (parameter store) lookups
@@ -140,7 +140,7 @@ func NewConfig(cfg aws.Config) (e Env, err error) {
 	// We get the value for the STAGE
 		stage, ok := os.LookupEnv("STAGE")
 		if ok {
-			log.Infof("STAGE overridden by local env: %s", stage)
+			log.Infof("STAGE was overridden by local env: %s", stage)
 		} else {
 			stage = e.GetSecret("STAGE")
 			log.Infof("STAGE is unset as an environment variable. The value is **%s** in AWS Parameter store", stage)
@@ -224,7 +224,7 @@ func (e Env) BugzillaDSN() string {
 	valbugzillaDbUser, ok := os.LookupEnv("BUGZILLA_DB_USER")
 	if ok {
 		bugzillaDbUser = valbugzillaDbUser
-		log.Infof("BUGZILLA_DB_USER overridden by local env: %s", valbugzillaDbUser)
+		log.Infof("BUGZILLA_DB_USER was overridden by local env: %s", valbugzillaDbUser)
 	} else {
 		bugzillaDbUser = e.GetSecret("BUGZILLA_DB_USER")
 		log.Infof("BUGZILLA_DB_USER is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbUser)
@@ -239,7 +239,7 @@ func (e Env) BugzillaDSN() string {
 	valbugzillaDbPassword, ok := os.LookupEnv("BUGZILLA_DB_PASSWORD")
 	if ok {
 		bugzillaDbPassword = valbugzillaDbPassword
-		log.Infof("BUGZILLA_DB_PASSWORD overridden by local env: %s", bugzillaDbPassword)
+		log.Infof("BUGZILLA_DB_PASSWORD was overridden by local env: **hidden_secret**")
 	} else {
 		bugzillaDbPassword = e.GetSecret("BUGZILLA_DB_PASSWORD")
 		log.Infof("BUGZILLA_DB_PASSWORD is unset as an environment variable. The value is **hidden_secret** in AWS Parameter store")
@@ -253,7 +253,7 @@ func (e Env) BugzillaDSN() string {
 	valmysqlhost, ok := os.LookupEnv("MYSQL_HOST")
 	if ok {
 		mysqlhost = valmysqlhost
-		log.Infof("MYSQL_HOST overridden by local env: %s", valmysqlhost)
+		log.Infof("MYSQL_HOST was overridden by local env: %s", valmysqlhost)
 	} else {
 		mysqlhost = e.GetSecret("MYSQL_HOST")
 		log.Infof("MYSQL_HOST is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlhost)
@@ -267,7 +267,7 @@ func (e Env) BugzillaDSN() string {
 	valmysqlport, ok := os.LookupEnv("MYSQL_PORT")
 	if ok {
 		mysqlport = valmysqlport
-		log.Infof("MYSQL_PORT overridden by local env: %s", valmysqlport)
+		log.Infof("MYSQL_PORT was overridden by local env: %s", valmysqlport)
 	} else {
 		mysqlport = e.GetSecret("MYSQL_PORT")
 		log.Infof("MYSQL_PORT is unset as an environment variable. The value is **%s** in AWS Parameter store", mysqlport)
@@ -281,7 +281,7 @@ func (e Env) BugzillaDSN() string {
 	valbugzillaDbName, ok := os.LookupEnv("BUGZILLA_DB_NAME")
 	if ok {
 		bugzillaDbName = valbugzillaDbName
-		log.Infof("BUGZILLA_DB_NAME overridden by local env: %s", valbugzillaDbName)
+		log.Infof("BUGZILLA_DB_NAME was overridden by local env: %s", valbugzillaDbName)
 	} else {
 		bugzillaDbName = e.GetSecret("BUGZILLA_DB_NAME")
 		log.Infof("BUGZILLA_DB_NAME is unset as an environment variable. The value is **%s** in AWS Parameter store", bugzillaDbName)
