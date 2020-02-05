@@ -8,7 +8,7 @@ This codbase uses AWS Lambdas and relies on AWS Aurora's capability to call lamb
 
 - This is intended to be deployed on AWS.
 - We use Travis CI for automated deployment.
-- One of the dependencies for this repo is maintained on the [unee-t/env codebase](https://github.com/unee-t/env)
+- One of the dependencies for this repo is maintained on the [unee-t/env codebase](https://github.com/unee-t/env).
 
 The following variables MUST be declared in order for this to work as intended:
 
