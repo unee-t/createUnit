@@ -33,7 +33,7 @@ func hasHeader(key, want string) checkFunc {
 }
 
 func TestConnected(t *testing.T) {
-	h, _ := New()
+	h, _ := NewDbConnexion()
 	defer h.db.Close()
 
 	check := func(fns ...checkFunc) []checkFunc { return fns }
@@ -111,7 +111,7 @@ func TestConnected(t *testing.T) {
 }
 
 func TestBadConnection(t *testing.T) {
-	h, _ := New()
+	h, _ := NewDbConnexion()
 	// Bad because we close the connection here
 	h.db.Close()
 

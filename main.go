@@ -9,12 +9,12 @@ import (
 	"time"
 
 	jsonhandler "github.com/apex/log/handlers/json"
-	"github.com/aws/aws-sdk-go-v2/aws/endpoints"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tj/go/http/response"
+
 	"github.com/unee-t/env"
 
 	"github.com/apex/log"
@@ -77,29 +77,56 @@ func (h handler) step1Insert(unit unit) (err error) {
 	return
 }
 
-// New setups the configuration assuming various parameters have been setup in the AWS account
-func New() (h handler, err error) {
+// NewDbConnexion setups the configuration assuming various parameters have been setup in the AWS account
+func NewDbConnexion() (h handler, err error) {
 
-	cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile("uneet-dev"))
+	// We check if the AWS CLI profile we need has been setup in this environment
+		awsCliProfile, ok := os.LookupEnv("TRAVIS_AWS_PROFILE")
+		if ok {
+			log.Infof("NewDbConnexion Log: the AWS CLI profile we use is: %s", awsCliProfile)
+		} else {
+			log.Fatal("NewDbConnexion Fatal: the AWS CLI profile is unset as an environment variable, this is a fatal problem")
+		}
+
+		cfg, err := external.LoadDefaultAWSConfig(external.WithSharedConfigProfile(awsCliProfile))
+		if err != nil {
+			log.WithError(err).Fatal("NewDbConnexion Fatal: We do not have the AWS credentials we need")
+			return
+		}
+
+	// We get the value for the DEFAULT_REGION
+		defaultRegion, ok := os.LookupEnv("DEFAULT_REGION")
+		if ok {
+			log.Infof("NewDbConnexion Log: DEFAULT_REGION was overridden by local env: %s", defaultRegion)
+		} else {
+			log.Fatal("NewDbConnexion Fatal: DEFAULT_REGION is unset as an environment variable, this is a fatal problem")
+		}
+
+		cfg.Region = defaultRegion
+		log.Infof("NewDbConnexion Log: The AWS region for this environment has been set to: %s", cfg.Region)
+
+	// We get the value for the API_ACCESS_TOKEN
+		apiAccessToken, ok := os.LookupEnv("API_ACCESS_TOKEN")
+		if ok {
+			log.Infof("NewDbConnexion Log: API_ACCESS_TOKEN was overridden by local env: **hidden secret**")
+		} else {
+			log.Fatal("NewDbConnexion Fatal: API_ACCESS_TOKEN is unset as an environment variable, this is a fatal problem")
+		}
+
+	e, err := env.NewConfig(cfg)
 	if err != nil {
-		log.WithError(err).Fatal("setting up credentials")
-		return
-	}
-	cfg.Region = endpoints.ApSoutheast1RegionID
-	e, err := env.New(cfg)
-	if err != nil {
-		log.WithError(err).Warn("error getting unee-t env")
+		log.WithError(err).Warn("NewDbConnexion Warning: error getting some of the parameters for that environment")
 	}
 
 	h = handler{
-		DSN:            e.BugzillaDSN(),
-		APIAccessToken: e.GetSecret("API_ACCESS_TOKEN"),
+		DSN:            e.BugzillaDSN(), // `BugzillaDSN` is a function that is defined in the uneet/env/main.go dependency.
+		APIAccessToken: apiAccessToken,
 		Code:           e.Code,
 	}
 
 	h.db, err = sql.Open("mysql", h.DSN)
 	if err != nil {
-		log.WithError(err).Fatal("error opening database")
+		log.WithError(err).Fatal("NewDbConnexion fatal: error opening database")
 		return
 	}
 
@@ -128,7 +155,7 @@ func New() (h handler, err error) {
 
 	err = prometheus.Register(microservicecheck)
 	if err != nil {
-		log.Warn("prom already registered")
+		log.Warn("NewDbConnexion Warning: prom already registered")
 	}
 
 	return
@@ -136,16 +163,16 @@ func New() (h handler, err error) {
 }
 
 func main() {
-	h, err := New()
+	h, err := NewDbConnexion()
 	if err != nil {
-		log.WithError(err).Fatal("error setting configuration")
+		log.WithError(err).Fatal("Unit API main Fatal: error setting configuration")
 		return
 	}
 	defer h.db.Close()
 	addr := ":" + os.Getenv("PORT")
 	app := h.BasicEngine()
 	if err := http.ListenAndServe(addr, app); err != nil {
-		log.WithError(err).Fatal("error listening")
+		log.WithError(err).Fatal("Unit API main Error: error listening")
 	}
 }
 
@@ -164,7 +191,7 @@ func (h handler) BasicEngine() http.Handler {
 
 func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err error) {
 	if unitID == "" {
-		return res, fmt.Errorf("id is unset")
+		return res, fmt.Errorf("runsql Error: the Bz unitID is unset")
 	}
 
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
@@ -172,14 +199,14 @@ func (h handler) runsql(sqlfile string, unitID string) (res sql.Result, err erro
 		return
 	}
 
-	log.Infof("Running %s with unit id %v with env %d", sqlfile, unitID, h.Code)
+	log.Infof("runsql Error: We are running the SQL file %s with the BZ unit id %v with env %d", sqlfile, unitID, h.Code)
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), unitID, h.Code))
 	return res, err
 }
 
 func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) {
 	if u.MefeUnitID == "" {
-		return res, fmt.Errorf("mefe_unit_id is unset")
+		return res, fmt.Errorf("runsqlUnit Error: we cannot proceed: the mefe_unit_id is unset")
 	}
 	sqlscript, err := ioutil.ReadFile(fmt.Sprintf("sql/%s", sqlfile))
 	if err != nil {
@@ -189,7 +216,7 @@ func (h handler) runsqlUnit(sqlfile string, u unit) (res sql.Result, err error) 
 		"unit": u,
 		"env":  h.Code,
 		"sql":  sqlfile,
-	}).Info("exec")
+	}).Info("runsqlUnit Info: we have executed the sql script")
 
 	res, err = h.db.Exec(fmt.Sprintf(string(sqlscript), u.MefeUnitID, h.Code))
 	return res, err
@@ -212,14 +239,14 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 	var metas []unitMetaData
 	err := decoder.Decode(&metas)
 	if err != nil {
-		log.WithError(err).Error("input error")
-		response.BadRequest(w, "Invalid JSON")
+		log.WithError(err).Error("disableUnit Error: There is an input error - Invalid JSON")
+		response.BadRequest(w, "disableUnit BadRequest: We cannot process Invalid JSON")
 		return
 	}
 	defer r.Body.Close()
 
 	if len(metas) < 1 {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "disableUnit BadRequest: this is an Empty payload")
 		return
 	}
 
@@ -231,11 +258,11 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 		})
 		_, err := h.runsql("unit_disable_existing.sql", fmt.Sprintf("%d", umd.BzID))
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_disable_existing.sql failed")
+			ctx.WithError(err).Errorf("disableUnit Error: The script unit_disable_existing.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
-		ctx.Info("ran unit_disable_existing.sql")
+		ctx.Info("disableUnit Log: we ran the script unit_disable_existing.sql")
 	}
 	response.OK(w, metas)
 }
@@ -243,7 +270,7 @@ func (h handler) disableUnit(w http.ResponseWriter, r *http.Request) {
 func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 	if r.Body == nil {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "createUnit BadRequest: cannot create a unit with an empty payload")
 		return
 	}
 
@@ -251,14 +278,14 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 	var units []unit
 	err := decoder.Decode(&units)
 	if err != nil {
-		log.WithError(err).Error("input error")
-		response.BadRequest(w, "Invalid JSON")
+		log.WithError(err).Error("createUnit BadRequest: there is an input error - the payload sent is not valid JSON")
+		response.BadRequest(w, "createUnit BadRequest: The payload sent is not valid JSON")
 		return
 	}
 	defer r.Body.Close()
 
 	if len(units) < 1 {
-		response.BadRequest(w, "Empty payload")
+		response.BadRequest(w, "createUnit BadRequest: the value for the unit seem incorrect (< 1)")
 		return
 	}
 
@@ -273,7 +300,7 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		if unit.MefeUnitID == "" {
 			ctx.Error("missing ID")
-			response.BadRequest(w, "Missing ID")
+			response.BadRequest(w, "createUnit BadRequest: we have no value for the MefeUnitID")
 			return
 		}
 
@@ -285,31 +312,31 @@ func (h handler) createUnit(w http.ResponseWriter, r *http.Request) {
 
 		err = h.step1Insert(unit)
 		if err != nil {
-			ctx.WithError(err).Error("failed to run step1Insert")
+			ctx.WithError(err).Error("createUnit Error: failed to run the function `step1Insert`(insert information from the MEFE into the BZ database so we can create the unit)")
 			response.InternalServerError(w, err.Error())
 			return
 		}
 
-		ctx.Info("inserted")
+		ctx.Info("createUnit Info: a new Unit has been inserted into the BZ database")
 
 		start := time.Now()
 		_, err = h.runsqlUnit("unit_create_new.sql", unit)
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			ctx.WithError(err).Errorf("createUnit Error: the script unit_create_new.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
 
-		ctx.WithField("duration", time.Since(start).String()).Infof("ran unit_create_new.sql")
+		ctx.WithField("duration", time.Since(start).String()).Infof("createUnit Log: We ran the script unit_create_new.sql")
 		ProductID, err = h.getProductID(unit.MefeUnitID)
 		if err != nil {
-			ctx.WithError(err).Errorf("unit_create_new.sql failed")
+			ctx.WithError(err).Errorf("createUnit Error: the script unit_create_new.sql failed")
 			response.InternalServerError(w, err.Error())
 			return
 		}
 		results = append(results, ProductID)
 	}
-	log.Infof("results: %#v", results)
+	log.Infof("createUnit Info: we have created the unit: %#v", results)
 	response.OK(w, results)
 
 }
