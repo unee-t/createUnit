@@ -59,7 +59,7 @@ deploy:
      tags: true
  # prod
  - provider: script
-   script: aws configure set profile.$AWS_PROFILE_PROD aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && aws configure set profile.$AWS_PROFILE_PROD.aws_secret_access_key $AWS_ACCOUNT_SECRET_PROD && aws configure set profile.$AWS_PROFILE_PROD.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_PROD list && export TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD && . ./aws.env && make prod
+   script: aws configure set profile.$AWS_PROFILE_PROD.aws_access_key_id $AWS_ACCOUNT_USER_ID_PROD && aws configure set profile.$AWS_PROFILE_PROD.aws_secret_access_key $AWS_ACCOUNT_SECRET_PROD && aws configure set profile.$AWS_PROFILE_PROD.region $AWS_DEFAULT_REGION && aws configure --profile $AWS_PROFILE_PROD list && export TRAVIS_AWS_PROFILE=$AWS_PROFILE_PROD && . ./aws.env && make prod
    edge: true
    on:
      branch: master
